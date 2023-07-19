@@ -23,3 +23,5 @@ typedef struct {
 }cartridge_header;
 
 int cartridge_load(char* file_name);
+u8 cartridge_read(u16 address);
+void cartridge_write(u16 address, u8 value);

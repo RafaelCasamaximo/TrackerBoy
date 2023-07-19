@@ -1,4 +1,5 @@
 #include "../include/cartridge.h"
+#include "../include/log.h"
 
 typedef struct {
     char file_name[1024];
@@ -351,6 +352,7 @@ int cartridge_load(char* file_name)
     FILE* fp = fopen(file_name, "r");
     if(!fp)
     {
+        log_error("Could not open ROM: %s", file_name);
         return -1;
     }
 
@@ -378,4 +380,17 @@ int cartridge_load(char* file_name)
     printf("Dest Code: %s\n", get_destination_region());
     printf("Version: %x\n", ctx.header->version);
     printf("Checksum: %x (%s)\n", ctx.header->checksum, (get_checksum() & 0xFF) ? "PASSED" : "FAILED");
+}
+
+u8 cartridge_read(u16 address)
+{
+    // Reads from cartridge and return address value (1 byte)
+    return ctx.rom_data[address];
+}
+
+void cartridge_write(u16 address, u8 value)
+{
+    // Writes value to the address on the cartridge
+    // ROM Only for now
+    NO_IMPL
 }

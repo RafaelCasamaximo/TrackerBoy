@@ -5,7 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NO_IMPL printf("Not implemented yet.");
+#include "log.h"
+
+#define NO_IMPL {log_warn("Not implemented yet.");}
 
 typedef uint8_t u8;
 typedef uint16_t u16;

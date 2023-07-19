@@ -17,3 +17,5 @@ list(APPEND SOURCES ${CMAKE_SOURCE_DIR}/trackerBoy/main.c)
 # Add the executable and link the sources
 add_executable(TrackerBoy ${SOURCES})
 
+# Add the LOG_USE_COLOR compiler flag
+add_definitions(-DLOG_USE_COLOR)

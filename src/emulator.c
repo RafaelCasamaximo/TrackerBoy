@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "../include/log.h"
 #include "../include/emulator.h"
 #include "../include/cartridge.h"
 
@@ -26,7 +27,7 @@ int emu_run(int argc, char** argv)
 
     if(argc < 2)
     {
-        printf("Usage: ./TrackerBoy <rom.gb>");
+        log_error("Wrong parameters. Usage: ./TrackerBoy <rom.gb>");
         return -1;
     }
 
