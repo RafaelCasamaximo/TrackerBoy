@@ -366,7 +366,6 @@ int cartridge_load(char* file_name)
 
     ctx.use_new_licensee_code = use_new_licensee_code();
 
-    ctx.header->checksum = get_checksum();
     ctx.header->global_checksum = get_global_checksum();
 
     // Debug dos valores
@@ -374,9 +373,9 @@ int cartridge_load(char* file_name)
     printf("Licensee: %s\n", get_licensee_name());
     printf("SGB Flag: %x\n", ctx.header->sgb_flag);
     printf("Type: %s\n", get_cartridge_type());
-    printf("ROM Size: %d\n", ctx.rom_size);
+    printf("ROM Size: %d KB\n", 32 << ctx.rom_size);
     printf("RAM Size: %s\n", get_ram_size());
     printf("Dest Code: %s\n", get_destination_region());
     printf("Version: %x\n", ctx.header->version);
-    printf("Checksum: %x\n", ctx.header->checksum);
+    printf("Checksum: %x (%s)\n", ctx.header->checksum, (get_checksum() & 0xFF) ? "PASSED" : "FAILED");
 }
