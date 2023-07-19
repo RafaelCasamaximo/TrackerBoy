@@ -1,7 +1,7 @@
 #include "../include/cartridge.h"
 
 typedef struct {
-    char* file_name;
+    char file_name[1024];
     u32 rom_size;
     u8* rom_data;
     bool use_new_licensee_code;
@@ -370,13 +370,13 @@ int cartridge_load(char* file_name)
     ctx.header->global_checksum = get_global_checksum();
 
     // Debug dos valores
-    printf("Title: %s", ctx.header->title);
-    printf("Licensee: %s", get_licensee_name());
-    printf("SGB Flag: %x", ctx.header->sgb_flag);
-    printf("Type: %s", get_cartridge_type());
-    printf("ROM Size: %d", ctx.rom_size);
-    printf("RAM Size: %s", get_ram_size());
-    printf("Dest Code: %s", get_destination_region());
-    printf("Version: %x", ctx.header->version);
-    printf("Checksum: %x", ctx.header->checksum);
+    printf("Title: %s\n", ctx.header->title);
+    printf("Licensee: %s\n", get_licensee_name());
+    printf("SGB Flag: %x\n", ctx.header->sgb_flag);
+    printf("Type: %s\n", get_cartridge_type());
+    printf("ROM Size: %d\n", ctx.rom_size);
+    printf("RAM Size: %s\n", get_ram_size());
+    printf("Dest Code: %s\n", get_destination_region());
+    printf("Version: %x\n", ctx.header->version);
+    printf("Checksum: %x\n", ctx.header->checksum);
 }

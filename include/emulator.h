@@ -10,3 +10,4 @@ typedef struct {
 
 
 emu_ctx* emu_get_ctx();
+int emu_run(int argc, char** argv);

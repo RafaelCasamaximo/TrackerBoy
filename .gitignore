@@ -1,2 +1,6 @@
 build/
 .vscode/
+roms/marioland.gb
+roms/pokemon.gb
+roms/tetris.gb
+roms/zelda.gb
