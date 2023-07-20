@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include <common.h>
 
 /**
  * Retrieved from: https://gbdev.io/pandocs/The_Cartridge_Header.html

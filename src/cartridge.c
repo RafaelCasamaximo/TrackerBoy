@@ -1,5 +1,5 @@
-#include "../include/cartridge.h"
-#include "../include/log.h"
+#include <cartridge.h>
+#include <log.h>
 
 typedef struct {
     char file_name[1024];

@@ -1,5 +1,5 @@
-#include "../include/bus.h"
-#include "../include/cartridge.h"
+#include <bus.h>
+#include <cartridge.h>
 
 u8 read_address(u16 address)
 {

@@ -1,8 +1,8 @@
 #include <stdio.h>
 
-#include "../include/log.h"
-#include "../include/emulator.h"
-#include "../include/cartridge.h"
+#include <log.h>
+#include <emulator.h>
+#include <cartridge.h>
 
 /**
  * Emulator Components:
