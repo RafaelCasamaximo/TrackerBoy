@@ -4,10 +4,12 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include <log.h>
 
 #define NO_IMPL {log_warn("Not implemented yet.");}
+#define ERROR(...) {log_fatal(__VA_ARGS__); exit(-1);}
 
 typedef uint8_t u8;
 typedef uint16_t u16;

@@ -11,3 +11,5 @@ typedef struct {
 
 emu_ctx* emu_get_ctx();
 int emu_run(int argc, char** argv);
+
+void emu_cycles(int emu_cycles);

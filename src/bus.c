@@ -1,7 +1,7 @@
 #include <bus.h>
 #include <cartridge.h>
 
-u8 read_address(u16 address)
+u8 bus_read(u16 address)
 {
     // Read from ROM
     if(address < 0x8000)
@@ -12,7 +12,7 @@ u8 read_address(u16 address)
     NO_IMPL
 }
 
-void write_address(u16 address, u8 value)
+void bus_write(u16 address, u8 value)
 {
     // Write from ROM
     if(address < 0x8000)

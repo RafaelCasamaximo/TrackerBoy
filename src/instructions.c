@@ -290,3 +290,13 @@ Instruction instructions[0x100] = {
     [0xFE] = {IN_CP, AM_R_D8, RT_A},
     [0xFF] = {IN_RST, AM_IMP, RT_NONE, RT_NONE, CT_NONE, 0x38},
 };
+
+Instruction* intruction_by_opcode(u8 opcode)
+{
+    if(instructions[opcode].instruction_type == IN_NONE)
+    {
+        return NULL;
+    }
+
+    return &instructions[opcode];
+}

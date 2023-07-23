@@ -1,9 +1,12 @@
+#pragma once
+
 #include <common.h>
 
 /*
     Instruction Mnemonics/ Types
 */
 typedef enum{
+    IN_NONE,
     IN_NOP,
     IN_LD,
     IN_INC,
@@ -142,3 +145,5 @@ typedef struct{
     Condition_type condition;
     u8 param; // Exclusively to Prefix CB instructions
 } Instruction;
+
+Instruction* intruction_by_opcode(u8 opcode);

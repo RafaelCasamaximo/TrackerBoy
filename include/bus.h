@@ -1,3 +1,5 @@
+#pragma once
+
 #include <common.h>
 
 /*
@@ -16,5 +18,5 @@
     FFFF	FFFF	Interrupt Enable register (IE)	
 */
 
-u8 read_address(u16 address);
-void write_address(u16 address, u8 value);
+u8 bus_read(u16 address);
+void bus_write(u16 address, u8 value);
