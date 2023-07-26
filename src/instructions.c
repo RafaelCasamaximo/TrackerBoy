@@ -103,7 +103,7 @@ Instruction instructions[0x100] = {
     [0x57] = {IN_LD, AM_R_R, RT_D, RT_A},
     [0x58] = {IN_LD, AM_R_R, RT_E, RT_B},
     [0x59] = {IN_LD, AM_R_R, RT_E, RT_C},
-    [0x6A] = {IN_LD, AM_R_R, RT_E, RT_D},
+    [0x5A] = {IN_LD, AM_R_R, RT_E, RT_D},
     [0x5B] = {IN_LD, AM_R_R, RT_E, RT_E},
     [0x5C] = {IN_LD, AM_R_R, RT_E, RT_H},
     [0x5D] = {IN_LD, AM_R_R, RT_E, RT_L},
@@ -291,6 +291,7 @@ Instruction instructions[0x100] = {
     [0xFF] = {IN_RST, AM_IMP, RT_NONE, RT_NONE, CT_NONE, 0x38},
 };
 
+
 Instruction* intruction_by_opcode(u8 opcode)
 {
     if(instructions[opcode].instruction_type == IN_NONE)
@@ -299,4 +300,61 @@ Instruction* intruction_by_opcode(u8 opcode)
     }
 
     return &instructions[opcode];
+}
+
+char* inst_lookup[] = {
+    "<NONE>",
+    "NOP",
+    "LD",
+    "INC",
+    "DEC",
+    "RLCA",
+    "ADD",
+    "RRCA",
+    "STOP",
+    "RLA",
+    "JR",
+    "RRA",
+    "DAA",
+    "CPL",
+    "SCF",
+    "CCF",
+    "HALT",
+    "ADC",
+    "SUB",
+    "SBC",
+    "AND",
+    "XOR",
+    "OR",
+    "CP",
+    "RET",
+    "POP",
+    "JP",
+    "CALL",
+    "PUSH",
+    "RST",
+    "CB", 
+    "RETI",
+    "LDH",
+    "DI",
+    "EI",
+    // LD HL,SP+r8 has alternative mnemonic LDHL SP,r8
+    "LDHL",
+    //CB instructions
+    "CB_RLC",
+    "CB_RRC",
+    "CB_RL",
+    "CB_RR",
+    "CB_SLA",
+    "CB_SRA",
+    "CB_SWAP",
+    "CB_SRL",
+    "CB_BIT",
+    "CB_RES",
+    "CB_SET",
+};
+
+char* inst_name_by_type(Instruction_type type)
+{
+    return inst_lookup[type];
 }

@@ -23,7 +23,7 @@ static void fetch_instruction()
 
     if(ctx.curr_inst == NULL)
     {
-        ERROR("Unknown Instruction: $02X", ctx.curr_opcode);
+        ERROR("Unknown Instruction: %02X", ctx.curr_opcode);
     }
 }
 
@@ -76,14 +76,18 @@ static void fetch_data()
         }
 
         default:
-            ERROR("Unknown Addressing Mode: %d", ctx.curr_inst->address_mode);
+            // ERROR("Unknown Addressing Mode: %d", ctx.curr_inst->address_mode);
     }
 }
 
 static void execute()
 {
-    log_info("INSTRUCTION: %02X", ctx.curr_opcode);
-    NO_IMPL
+    IN_PROC proc = inst_get_processor(ctx.curr_inst->instruction_type);
+    if(!proc)
+    {
+        return;
+    }
+    proc(&ctx);
 }
 
 bool cpu_step()
@@ -96,5 +100,5 @@ bool cpu_step()
         execute();
     }
 
-    return false;
+    return true;
 }
