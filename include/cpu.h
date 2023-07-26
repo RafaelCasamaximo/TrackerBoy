@@ -23,10 +23,12 @@ typedef struct{
     u8 curr_opcode;
     Instruction* curr_inst;
 
-    // Flags
+    // CPU settings Flags
     bool halted;
     bool stepping;
 
+    // Interruptions enabled or disabled (for DI and EI)
+    bool int_master_enabled;
 } cpu_ctx;
 
 void cpu_init();
@@ -40,3 +42,6 @@ u16 cpu_read_reg(Register_type rt);
 
 typedef void (*IN_PROC)(cpu_ctx *);
 IN_PROC inst_get_processor(Instruction_type type);
+
+#define CPU_FLAG_Z BIT(ctx->registers.f, 7)
+#define CPU_FLAG_C BIT(ctx->registers.f, 4)

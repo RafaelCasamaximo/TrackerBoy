@@ -1,14 +1,52 @@
 #include <common.h>
 #include <cpu.h>
+#include <emulator.h>
+
+static bool check_condition(cpu_ctx* ctx)
+{
+    bool z = CPU_FLAG_Z;
+    bool c = CPU_FLAG_C;
+
+    switch (ctx->curr_inst->condition)
+    {
+        case CT_NONE: return true;
+        case CT_C: return c;
+        case CT_NC: return !c;
+        case CT_Z: return z;
+        case CT_NZ: return !z;
+    }
+
+    return false;
+}
+
+static void cpu_set_flags(cpu_ctx* ctx, char z, char n, char h, char c)
+{
+    if(z != -1)
+    {
+        BIT_SET(ctx->registers.f, 7, z);
+    }
+    if(n != -1)
+    {
+        BIT_SET(ctx->registers.f, 6, n);
+    }
+    if(h != -1)
+    {
+        BIT_SET(ctx->registers.f, 5, h);
+    }
+    if(c != -1)
+    {
+        BIT_SET(ctx->registers.f, 4, c);
+    }
+}
 
 static void proc_none(cpu_ctx* ctx)
 {
-
+    ERROR("INVALID INSTRUCTION DETECTED: %02X @ %x", ctx->curr_opcode, ctx->registers.pc);
 }
 
 static void proc_nop(cpu_ctx* ctx)
 {
-
+    return;
 }
 
 static void proc_ld(cpu_ctx* ctx)
@@ -103,17 +141,20 @@ static void proc_sbc(cpu_ctx* ctx)
 
 static void proc_and(cpu_ctx* ctx)
 {
-
+    ctx->registers.a &= ctx->fetched_data & 0xFF;
+    cpu_set_flags(ctx, ctx->registers.a == 0, 0, 0, 0);
 }
 
 static void proc_xor(cpu_ctx* ctx)
 {
-
+    ctx->registers.a ^= ctx->fetched_data & 0xFF;
+    cpu_set_flags(ctx, ctx->registers.a == 0, 0, 0, 0);
 }
 
 static void proc_or(cpu_ctx* ctx)
 {
-
+    ctx->registers.a |= ctx->fetched_data & 0xFF;
+    cpu_set_flags(ctx, ctx->registers.a == 0, 0, 0, 0);
 }
 
 static void proc_cp(cpu_ctx* ctx)
@@ -133,7 +174,11 @@ static void proc_pop(cpu_ctx* ctx)
 
 static void proc_jp(cpu_ctx* ctx)
 {
-
+    if(check_condition(ctx))
+    {
+        ctx->registers.pc = ctx->fetched_data;
+        emu_cycles(1);
+    }
 }
 
 static void proc_call(cpu_ctx* ctx)
@@ -168,12 +213,12 @@ static void proc_ldh(cpu_ctx* ctx)
 
 static void proc_di(cpu_ctx* ctx)
 {
-
+    ctx->int_master_enabled = false;
 }
 
 static void proc_ei(cpu_ctx* ctx)
 {
-
+    ctx->int_master_enabled = true;
 }
 
 // LD HL,SP+r8 has alternative mnemonic LDHL SP,r8

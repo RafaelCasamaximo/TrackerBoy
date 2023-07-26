@@ -67,5 +67,5 @@ int emu_run(int argc, char** argv)
 
 void emu_cycles(int emu_cycles)
 {
-    NO_IMPL
+    // NO_IMPL
 }

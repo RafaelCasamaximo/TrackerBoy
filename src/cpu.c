@@ -7,6 +7,7 @@ cpu_ctx ctx = {0};
 
 void cpu_init()
 {
+    ctx.registers.pc = 0x100;
     ctx.halted = false;
     NO_IMPL
 }
@@ -23,7 +24,7 @@ static void fetch_instruction()
 
     if(ctx.curr_inst == NULL)
     {
-        ERROR("Unknown Instruction: %02X", ctx.curr_opcode);
+        ERROR("Unknown Instruction: %02X @ %x", ctx.curr_opcode, ctx.registers.pc - 1);
     }
 }
 
@@ -59,6 +60,7 @@ static void fetch_data()
         }
 
         // Set fetched data as content of the PC and PC+1 (u16)
+        case AM_A16:
         case AM_D16:
         {
             u16 lo = bus_read(ctx.registers.pc);
@@ -97,6 +99,7 @@ bool cpu_step()
     {
         fetch_instruction();
         fetch_data();
+        log_debug("%04X: %-7s", ctx.registers.pc, inst_name_by_type(ctx.curr_inst->instruction_type));
         execute();
     }
 
