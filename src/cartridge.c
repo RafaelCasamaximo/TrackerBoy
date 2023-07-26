@@ -363,6 +363,8 @@ int cartridge_load(char* file_name)
     ctx.rom_data = malloc(ctx.rom_size);
     fread(ctx.rom_data, ctx.rom_size, 1, fp);
 
+    fclose(fp);
+
     ctx.header = (cartridge_header*)(ctx.rom_data + 0x0100);
     ctx.header->title[15] = 0;
 
@@ -380,6 +382,11 @@ int cartridge_load(char* file_name)
     printf("Dest Code: %s\n", get_destination_region());
     printf("Version: %x\n", ctx.header->version);
     printf("Checksum: %x (%s)\n", ctx.header->checksum, (get_checksum() & 0xFF) ? "PASSED" : "FAILED");
+}
+
+void cartridge_exit()
+{
+    free(ctx.rom_data);
 }
 
 u8 cartridge_read(u16 address)

@@ -62,6 +62,8 @@ int emu_run(int argc, char** argv)
         ctx.ticks++;
     }
 
+    cartridge_exit();
+
     return 0;
 }
 
