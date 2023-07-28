@@ -29,6 +29,7 @@ typedef struct{
 
     // Interruptions enabled or disabled (for DI and EI)
     bool int_master_enabled;
+    u8 ie_register;
 } cpu_ctx;
 
 // CPU FETCH
@@ -52,3 +53,6 @@ IN_PROC inst_get_processor(Instruction_type type);
 
 #define CPU_FLAG_Z BIT(ctx->registers.f, 7)
 #define CPU_FLAG_C BIT(ctx->registers.f, 4)
+
+u8 cpu_get_ie_register();
+void cpu_set_ie_register(u8 value);

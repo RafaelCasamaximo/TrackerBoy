@@ -234,7 +234,15 @@ static void proc_reti(cpu_ctx* ctx)
 
 static void proc_ldh(cpu_ctx* ctx)
 {
+    if(ctx->curr_inst->register_1 == RT_A)
+    {
+        cpu_set_reg(RT_A, cpu_read_reg(RT_C) | 0xFF00);
+    }
+    else{
+        bus_write(0xFF | ctx->fetched_data, ctx->registers.a);
+    }
 
+    emu_cycles(1);
 }
 
 static void proc_di(cpu_ctx* ctx)

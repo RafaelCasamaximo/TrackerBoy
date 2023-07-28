@@ -9,7 +9,6 @@ void cpu_init()
 {
     ctx.registers.pc = 0x100;
     ctx.halted = false;
-    NO_IMPL
 }
 
 /*
@@ -45,9 +44,30 @@ bool cpu_step()
     {
         fetch_instruction();
         fetch_data();
-        log_debug("%04X: %-7s", ctx.registers.pc, inst_name_by_type(ctx.curr_inst->instruction_type));
+        // log_debug("%04X: %-7s A: 0x%2X BC: 0x%2X%2X DE: 0x%2X%2X HL: 0x%2X%2X %d,%d,%d,%d",
+        // ctx.registers.pc,
+        // inst_name_by_type(ctx.curr_inst->instruction_type),
+        // ctx.registers.a,
+        // ctx.registers.b, ctx.registers.c,
+        // ctx.registers.d, ctx.registers.e,
+        // ctx.registers.h, ctx.registers.l,
+        // BIT(ctx.registers.f, 7),
+        // BIT(ctx.registers.f, 6),
+        // BIT(ctx.registers.f, 5),
+        // BIT(ctx.registers.f, 4));
+        log_debug("0x%04X: %-7s", ctx.registers.pc, inst_name_by_type(ctx.curr_inst->instruction_type));
         execute();
     }
 
     return true;
+}
+
+u8 cpu_get_ie_register()
+{
+    return ctx.ie_register;
+}
+
+void cpu_set_ie_register(u8 value)
+{
+    ctx.ie_register = value;
 }
