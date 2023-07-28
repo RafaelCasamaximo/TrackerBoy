@@ -31,14 +31,15 @@ typedef struct{
     bool int_master_enabled;
 } cpu_ctx;
 
+void fetch_instruction();
+void fetch_data();
+void execute();
+
 void cpu_init();
 bool cpu_step();
 
-static void fetch_instruction();
-static void fetch_data();
-static void execute();
-
 u16 cpu_read_reg(Register_type rt);
+void cpu_set_reg(Register_type type, u16 value);
 
 typedef void (*IN_PROC)(cpu_ctx *);
 IN_PROC inst_get_processor(Instruction_type type);
