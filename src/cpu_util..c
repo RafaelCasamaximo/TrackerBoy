@@ -7,6 +7,11 @@ u16 reverse(u16 n)
     return ((n & 0xFF00) >> 8) | ((n & 0x00FF) << 8);
 }
 
+bool is_16bit_register(Register_type type)
+{
+    return (type == RT_AF || type == RT_BC || type == RT_DE || type == RT_HL);
+}
+
 u16 cpu_read_reg(Register_type rt)
 {
     switch (rt)

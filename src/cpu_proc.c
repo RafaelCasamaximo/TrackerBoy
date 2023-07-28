@@ -1,6 +1,7 @@
 #include <common.h>
 #include <cpu.h>
 #include <emulator.h>
+#include <bus.h>
 
 static bool check_condition(cpu_ctx* ctx)
 {
@@ -51,7 +52,32 @@ static void proc_nop(cpu_ctx* ctx)
 
 static void proc_ld(cpu_ctx* ctx)
 {
+    // Special Case: Destination is memory
+    if(ctx->dest_is_mem)
+    {
+        // 16bit register
+        if(is_16bit_register(ctx->curr_inst->register_2))
+        {
+            emu_cycles(1);
+            bus_write16(ctx->mem_dest, ctx->fetched_data);
+        }
+        // 8bit register
+        if(!is_16bit_register(ctx->curr_inst->register_2))
+        {
+            bus_write(ctx->mem_dest, ctx->fetched_data);
+        }
+        return;
+    }
 
+    if(ctx->curr_inst->instruction_type == AM_HL_SPR)
+    {
+        u8 hflag = (cpu_read_reg(ctx->curr_inst->register_2) & 0xF) + (ctx->fetched_data & 0xF) >= 0x10;
+        u8 cflag = (cpu_read_reg(ctx->curr_inst->register_2) & 0xFF) + (ctx->fetched_data & 0xFF) >= 0x100;
+        cpu_set_flags(ctx, 0, 0, hflag, cflag);
+        cpu_set_reg(ctx->curr_inst->register_1, cpu_read_reg(ctx->curr_inst->register_2) + (char)ctx->fetched_data);
+    }
+
+    cpu_set_reg(ctx->curr_inst->register_1, ctx->fetched_data);   
 }
 
 static void proc_inc(cpu_ctx* ctx)

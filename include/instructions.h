@@ -77,29 +77,29 @@ typedef enum{
 */
 
 typedef enum {
-    AM_IMP, // OK
-    AM_R_D16, // OK
-    AM_R_R, // OK
-    AM_MR_R, // OK
-    AM_R, // OK
-    AM_R_D8, // OK
-    AM_R_MR, // OK
-    AM_R_HLI, // OK
-    AM_R_HLD, // OK
-    AM_HLI_R, // OK
-    AM_HLD_R, // OK
-    AM_R_A8, // OK
-    AM_A8_R, // OK
-    AM_HL_SPR, // OK
-    AM_D16, // OK
-    AM_D8, // OK
-    AM_A16, // OK
-    AM_A8, // OK
-    AM_D16_R, // OK
-    AM_MR_D8, // OK
-    AM_MR, // OK
-    AM_A16_R, // OK
-    AM_R_A16, // OK
+    AM_IMP,         // Implemented
+    AM_R_D16,       // Implemented
+    AM_R_R,         // Implemented
+    AM_MR_R,        // Implemented
+    AM_R,           // Implemented
+    AM_R_D8,        // Implemented
+    AM_R_MR,        // Implemented
+    AM_R_HLI,       // Implemented
+    AM_R_HLD,       // Implemented
+    AM_HLI_R,       // Implemented
+    AM_HLD_R,       // Implemented
+    AM_R_A8,        // Implemented
+    AM_A8_R,        // Implemented
+    AM_HL_SPR,      // Implemented
+    AM_D16,         // Implemented
+    AM_D8,          // Implemented
+    AM_A16,         // Implemented
+    AM_A8,          // Implemented
+    AM_D16_R,       // Implemented
+    AM_MR_D8,       // Implemented
+    AM_MR,          // Implemented
+    AM_A16_R,       // Implemented
+    AM_R_A16,       // Implemented
 } Address_mode;
 
 /*
