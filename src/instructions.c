@@ -3,7 +3,7 @@
 Instruction instructions[0x100] = {
 
     // 0x0X
-    [0x00] = {IN_NOP, AM_IMP},
+    [0x00] = {IN_NOP, AM_IMP},                              // Implemented
     [0x01] = {IN_LD, AM_R_D16, RT_BC},                      // Implemented
     [0x02] = {IN_LD, AM_MR_R, RT_BC, RT_A},                 // Implemented
     [0x03] = {IN_INC, AM_R, RT_BC},
@@ -29,7 +29,7 @@ Instruction instructions[0x100] = {
     [0x15] = {IN_DEC, AM_R, RT_D},
     [0x16] = {IN_LD, AM_R_D8, RT_D},                        // Implemented
     [0x17] = {IN_RLA},
-    [0x18] = {IN_JR, AM_D8},
+    [0x18] = {IN_JR, AM_D8},                                // Implemented
     [0x19] = {IN_ADD, AM_R_R, RT_HL, RT_DE},
     [0x1A] = {IN_LD, AM_R_MR, RT_A, RT_DE},                 // Implemented
     [0x1B] = {IN_DEC, AM_R, RT_DE},
@@ -39,7 +39,7 @@ Instruction instructions[0x100] = {
     [0x1F] = {IN_RRA},
 
     // 0x2X
-    [0x20] = {IN_JR, AM_D8, RT_NONE, RT_NONE, CT_NZ},
+    [0x20] = {IN_JR, AM_D8, RT_NONE, RT_NONE, CT_NZ},       // Implemented
     [0x21] = {IN_LD, AM_R_D16, RT_HL},                      // Implemented
     [0x22] = {IN_LD, AM_HLI_R, RT_HL, RT_A},                // Implemented
     [0x23] = {IN_INC, AM_R, RT_HL},
@@ -47,7 +47,7 @@ Instruction instructions[0x100] = {
     [0x25] = {IN_DEC, AM_R, RT_H},
     [0x26] = {IN_LD, AM_R_D8, RT_H},                        // Implemented
     [0x27] = {IN_DAA},
-    [0x28] = {IN_JR, AM_D8, RT_NONE, RT_NONE, CT_Z},
+    [0x28] = {IN_JR, AM_D8, RT_NONE, RT_NONE, CT_Z},        // Implemented
     [0x29] = {IN_ADD, AM_R_R, RT_HL, RT_HL},
     [0x2A] = {IN_LD, AM_R_HLI, RT_A, RT_HL},                // Implemented
     [0x2B] = {IN_DEC, AM_R, RT_HL},
@@ -57,7 +57,7 @@ Instruction instructions[0x100] = {
     [0x2F] = {IN_CPL},
 
     // 0x3X
-    [0x30] = {IN_JR, AM_D8, RT_NONE, RT_NONE, CT_NC},
+    [0x30] = {IN_JR, AM_D8, RT_NONE, RT_NONE, CT_NC},       // Implemented
     [0x31] = {IN_LD, AM_R_D16, RT_SP},                      // Implemented
     [0x32] = {IN_LD, AM_HLD_R, RT_HL, RT_A},                // Implemented
     [0x33] = {IN_INC, AM_R, RT_SP},
@@ -65,7 +65,7 @@ Instruction instructions[0x100] = {
     [0x35] = {IN_DEC, AM_MR, RT_HL},
     [0x36] = {IN_LD, AM_MR_D8, RT_HL},                      // Implemented
     [0x37] = {IN_SCF},
-    [0x38] = {IN_JR, AM_R_D8, RT_C},
+    [0x38] = {IN_JR, AM_R_D8, RT_C},                        // Implemented
     [0x39] = {IN_ADD, AM_R_R, RT_HL, RT_SP},
     [0x3A] = {IN_LD, AM_R_HLD, RT_A, RT_HL},                // Implemented
     [0x3B] = {IN_DEC, AM_R, RT_SP},
@@ -219,17 +219,17 @@ Instruction instructions[0x100] = {
     [0xBF] = {IN_CP, AM_R_R, RT_A, RT_A},
 
     // 0xCX
-    [0xC0] = {IN_RET, AM_IMP, RT_NONE, RT_NONE, CT_NZ},
-    [0xC1] = {IN_POP, AM_R, RT_BC},
-    [0xC2] = {IN_JP, AM_A16, RT_NONE, RT_NONE, CT_NZ},
-    [0xC3] = {IN_JP, AM_A16},
+    [0xC0] = {IN_RET, AM_IMP, RT_NONE, RT_NONE, CT_NZ},     // Implemented
+    [0xC1] = {IN_POP, AM_R, RT_BC},                         // Implemented
+    [0xC2] = {IN_JP, AM_A16, RT_NONE, RT_NONE, CT_NZ},      // Implemented
+    [0xC3] = {IN_JP, AM_A16},                               // Implemented
     [0xC4] = {IN_CALL, AM_A16, RT_NONE, RT_NONE, CT_NZ},
-    [0xC5] = {IN_PUSH, AM_R, RT_BC},
+    [0xC5] = {IN_PUSH, AM_R, RT_BC},                        // Implemented
     [0xC6] = {IN_ADD, AM_R_D8, RT_A},
     [0xC7] = {IN_RST, AM_IMP, RT_NONE, RT_NONE, CT_NONE, 0x00},
-    [0xC8] = {IN_RET, AM_IMP, RT_NONE, RT_NONE, CT_Z},
-    [0xC9] = {IN_RET},
-    [0xCA] = {IN_JP, AM_A16, RT_NONE, RT_NONE, CT_Z},
+    [0xC8] = {IN_RET, AM_IMP, RT_NONE, RT_NONE, CT_Z},      // Implemented
+    [0xC9] = {IN_RET},                                      // Implemented
+    [0xCA] = {IN_JP, AM_A16, RT_NONE, RT_NONE, CT_Z},       // Implemented
     [0xCB] = {IN_CB, AM_D8},
     [0xCC] = {IN_CALL, AM_A16, RT_NONE, RT_NONE, CT_Z},
     [0xCD] = {IN_CALL, AM_A16, RT_NONE, RT_NONE},
@@ -237,17 +237,17 @@ Instruction instructions[0x100] = {
     [0xCF] = {IN_RST, AM_IMP, RT_NONE, RT_NONE, CT_NONE, 0x08},
 
     // 0xDX
-    [0xD0] = {IN_RET, AM_IMP, RT_NONE, RT_NONE, CT_NC},
-    [0xD1] = {IN_POP, AM_R, RT_DE},
-    [0xD2] = {IN_JP, AM_A16, RT_NONE, RT_NONE, CT_NC},
+    [0xD0] = {IN_RET, AM_IMP, RT_NONE, RT_NONE, CT_NC},     // Implemented
+    [0xD1] = {IN_POP, AM_R, RT_DE},                         // Implemented
+    [0xD2] = {IN_JP, AM_A16, RT_NONE, RT_NONE, CT_NC},      // Implemented
     [0xD3] = {IN_ERR},
     [0xD4] = {IN_CALL, AM_A16, RT_NONE, RT_NONE, CT_NC},
-    [0xD5] = {IN_PUSH, AM_R, RT_DE},
+    [0xD5] = {IN_PUSH, AM_R, RT_DE},                        // Implemented
     [0xD6] = {IN_SUB, AM_R_D8, RT_A},
     [0xD7] = {IN_RST, AM_IMP, RT_NONE, RT_NONE, CT_NONE, 0x10},
-    [0xD8] = {IN_RET, AM_R, RT_C},
-    [0xD9] = {IN_RETI},
-    [0xDA] = {IN_JP, AM_A16, RT_NONE, RT_NONE, CT_C},
+    [0xD8] = {IN_RET, AM_R, RT_C},                          // Implemented
+    [0xD9] = {IN_RETI},                                     // Implemented
+    [0xDA] = {IN_JP, AM_A16, RT_NONE, RT_NONE, CT_C},       // Implemented
     [0xDB] = {IN_ERR},
     [0xDC] = {IN_CALL, AM_A16, RT_NONE, RT_NONE, CT_C},
     [0xDD] = {IN_ERR},
@@ -256,15 +256,15 @@ Instruction instructions[0x100] = {
 
     // 0xEX
     [0xE0] = {IN_LDH, AM_A8_R, RT_NONE, RT_A},              // Implemented
-    [0xE1] = {IN_POP, AM_R, RT_DE},
+    [0xE1] = {IN_POP, AM_R, RT_DE},                         // Implemented
     [0xE2] = {IN_LD, AM_MR_R, RT_C, RT_A},                  // Implemented
     [0xE3] = {IN_ERR},
     [0xE4] = {IN_ERR},
-    [0xE5] = {IN_PUSH, AM_R, RT_HL},
+    [0xE5] = {IN_PUSH, AM_R, RT_HL},                        // Implemented
     [0xE6] = {IN_AND, AM_R_D8, RT_A},
     [0xE7] = {IN_RST, AM_IMP, RT_NONE, RT_NONE, CT_NONE, 0x20},
     [0xE8] = {IN_ADD, AM_R_A8, RT_SP},
-    [0xE9] = {IN_JP, AM_R, RT_HL},
+    [0xE9] = {IN_JP, AM_R, RT_HL},                          // Implemented
     [0xEA] = {IN_LD, AM_A16_R, RT_NONE, RT_A},              // Implemented
     [0xEB] = {IN_ERR},
     [0xEC] = {IN_ERR},
@@ -274,17 +274,17 @@ Instruction instructions[0x100] = {
 
     // 0xFX
     [0xF0] = {IN_LDH, AM_R_A8, RT_A},                       // Implemented
-    [0xF1] = {IN_POP, AM_R, RT_AF},
+    [0xF1] = {IN_POP, AM_R, RT_AF},                         // Implemented
     [0xF2] = {IN_LD, AM_R_MR, RT_A, RT_C},                  // Implemented
-    [0xF3] = {IN_DI},
+    [0xF3] = {IN_DI},                                       // Implemented
     [0xF4] = {IN_ERR},
-    [0xF5] = {IN_PUSH, AM_R, RT_AF},
+    [0xF5] = {IN_PUSH, AM_R, RT_AF},                        // Implemented
     [0xF6] = {IN_OR, AM_R_D8, RT_A},
     [0xF7] = {IN_RST, AM_IMP, RT_NONE, RT_NONE, CT_NONE, 0x30},
     [0xF8] = {IN_LDHL, AM_HL_SPR, RT_HL, RT_SP},            // Implemented
     [0xF9] = {IN_LD, AM_R_R, RT_SP, RT_HL},                 // Implemented
     [0xFA] = {IN_LD, AM_R_A16, RT_A},                       // Implemented
-    [0xFB] = {IN_EI},
+    [0xFB] = {IN_EI},                                       // Implemented
     [0xFC] = {IN_ERR},
     [0xFD] = {IN_ERR},
     [0xFE] = {IN_CP, AM_R_D8, RT_A},

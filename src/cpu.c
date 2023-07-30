@@ -42,10 +42,13 @@ bool cpu_step()
     
     if(!ctx.halted)
     {
+        u16 pc = ctx.registers.pc;
+
         fetch_instruction();
         fetch_data();
+        
         log_debug("%04X: %-7s A: 0x%2X BC: 0x%2X%2X DE: 0x%2X%2X HL: 0x%2X%2X %d,%d,%d,%d",
-        ctx.registers.pc,
+        pc,
         inst_name_by_type(ctx.curr_inst->instruction_type),
         ctx.registers.a,
         ctx.registers.b, ctx.registers.c,

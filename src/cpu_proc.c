@@ -41,6 +41,22 @@ static void cpu_set_flags(cpu_ctx* ctx, char z, char n, char h, char c)
     }
 }
 
+static void goto_addr(cpu_ctx* ctx, u16 addr, bool pushpc)
+{
+    if(check_condition(ctx))
+    {
+
+        if(pushpc)
+        {
+            emu_cycles(2);
+            stack_push16(ctx->registers.pc);
+        }
+
+        ctx->registers.pc = addr;
+        emu_cycles(1);
+    }
+}
+
 static void proc_none(cpu_ctx* ctx)
 {
     ERROR("INVALID INSTRUCTION DETECTED: %02X @ %x", ctx->curr_opcode, ctx->registers.pc);
@@ -118,7 +134,9 @@ static void proc_rla(cpu_ctx* ctx)
 
 static void proc_jr(cpu_ctx* ctx)
 {
-
+    char rel = (char)(ctx->fetched_data & 0xFF);
+    u16 addr = ctx->registers.pc + rel;
+    goto_addr(ctx, addr, false);
 }
 
 static void proc_rra(cpu_ctx* ctx)
@@ -192,6 +210,23 @@ static void proc_cp(cpu_ctx* ctx)
 static void proc_ret(cpu_ctx* ctx)
 {
 
+    if(ctx->curr_inst->condition != CT_NONE)
+    {
+        emu_cycles(1);
+    }
+
+    if(check_condition(ctx))
+    {
+        u16 lo = stack_pop();
+        emu_cycles(1);
+        u16 hi = stack_pop();
+        emu_cycles(1);
+
+        u16 n = (hi << 8) | lo;
+        ctx->registers.pc = n;
+
+        emu_cycles(1);
+    }
 }
 
 static void proc_pop(cpu_ctx* ctx)
@@ -213,16 +248,12 @@ static void proc_pop(cpu_ctx* ctx)
 
 static void proc_jp(cpu_ctx* ctx)
 {
-    if(check_condition(ctx))
-    {
-        ctx->registers.pc = ctx->fetched_data;
-        emu_cycles(1);
-    }
+    goto_addr(ctx, ctx->fetched_data, false);
 }
 
 static void proc_call(cpu_ctx* ctx)
 {
-
+    goto_addr(ctx, ctx->fetched_data, true);
 }
 
 static void proc_push(cpu_ctx* ctx)
@@ -240,7 +271,7 @@ static void proc_push(cpu_ctx* ctx)
 
 static void proc_rst(cpu_ctx* ctx)
 {
-
+    goto_addr(ctx, ctx->curr_inst->param, true);
 }
 
 static void proc_cb(cpu_ctx* ctx)
@@ -250,7 +281,8 @@ static void proc_cb(cpu_ctx* ctx)
 
 static void proc_reti(cpu_ctx* ctx)
 {
-
+    ctx->int_master_enabled = true;
+    proc_ret(ctx);
 }
 
 static void proc_ldh(cpu_ctx* ctx)
