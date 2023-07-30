@@ -187,7 +187,6 @@ void fetch_data()
             return;
         }
 
-        case AM_R_D16:
         case AM_R_A16:
         {
             u16 lo = bus_read(ctx.registers.pc);
@@ -209,6 +208,7 @@ void fetch_data()
 
         // Set fetched data as content of the PC and PC+1 (u16)
         // Works with little endian
+        case AM_R_D16:
         case AM_A16:
         case AM_D16:
         {

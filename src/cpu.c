@@ -46,9 +46,10 @@ bool cpu_step()
 
         fetch_instruction();
         fetch_data();
-        
-        log_debug("%04X: %-7s A: 0x%2X BC: 0x%2X%2X DE: 0x%2X%2X HL: 0x%2X%2X %d,%d,%d,%d",
+
+        log_debug("%04X: (%02X) %-7s A: 0x%02X BC: 0x%02X%02X DE: 0x%02X%02X HL: 0x%02X%02X %d,%d,%d,%d",
         pc,
+        ctx.curr_opcode,
         inst_name_by_type(ctx.curr_inst->instruction_type),
         ctx.registers.a,
         ctx.registers.b, ctx.registers.c,

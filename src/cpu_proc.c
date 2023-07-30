@@ -79,10 +79,13 @@ static void proc_ld(cpu_ctx* ctx)
             bus_write16(ctx->mem_dest, ctx->fetched_data);
         }
         // 8bit register
-        if(!is_16bit_register(ctx->curr_inst->register_2))
+        else
         {
             bus_write(ctx->mem_dest, ctx->fetched_data);
         }
+
+        emu_cycles(1);
+        
         return;
     }
 
@@ -92,6 +95,7 @@ static void proc_ld(cpu_ctx* ctx)
         u8 cflag = (cpu_read_reg(ctx->curr_inst->register_2) & 0xFF) + (ctx->fetched_data & 0xFF) >= 0x100;
         cpu_set_flags(ctx, 0, 0, hflag, cflag);
         cpu_set_reg(ctx->curr_inst->register_1, cpu_read_reg(ctx->curr_inst->register_2) + (char)ctx->fetched_data);
+        return;
     }
 
     cpu_set_reg(ctx->curr_inst->register_1, ctx->fetched_data);   
@@ -99,12 +103,59 @@ static void proc_ld(cpu_ctx* ctx)
 
 static void proc_inc(cpu_ctx* ctx)
 {
+    u16 val = cpu_read_reg(ctx->curr_inst->register_1) + 1;
+    
+    if(is_16bit_register(ctx->curr_inst->register_1))
+    {
+        emu_cycles(1);
+    }
 
+    if(ctx->curr_inst->register_1 == RT_HL && ctx->curr_inst->address_mode == AM_MR)
+    {
+        val = bus_read(cpu_read_reg(RT_HL)) + 1;
+        val &= 0xFF;
+        bus_write(cpu_read_reg(RT_HL), val);
+    }
+    else
+    {
+        cpu_set_reg(ctx->curr_inst->register_1, val);
+        val = cpu_read_reg(ctx->curr_inst->register_1);
+    }
+
+    if((ctx->curr_opcode == 0x03) == 0x03)
+    {
+        return;
+    }
+
+    cpu_set_flags(ctx, val == 0, 0, (val & 0x0F) == 0, -1);
 }
 
 static void proc_dec(cpu_ctx* ctx)
 {
+    u16 val = cpu_read_reg(ctx->curr_inst->register_1) - 1;
+    
+    if(is_16bit_register(ctx->curr_inst->register_1))
+    {
+        emu_cycles(1);
+    }
 
+    if(ctx->curr_inst->register_1 == RT_HL && ctx->curr_inst->address_mode == AM_MR)
+    {
+        val = bus_read(cpu_read_reg(RT_HL)) - 1;
+        bus_write(cpu_read_reg(RT_HL), val);
+    }
+    else
+    {
+        cpu_set_reg(ctx->curr_inst->register_1, val);
+        val = cpu_read_reg(ctx->curr_inst->register_1);
+    }
+
+    if((ctx->curr_opcode == 0x0B) == 0x0B)
+    {
+        return;
+    }
+
+    cpu_set_flags(ctx, val == 0, 1, (val & 0x0F) == 0x0F, -1);
 }
 
 static void proc_rlca(cpu_ctx* ctx)
@@ -236,7 +287,7 @@ static void proc_pop(cpu_ctx* ctx)
     u16 hi = stack_pop();
     emu_cycles(1);
 
-    u16 n = (hi >> 8) | lo;
+    u16 n = (hi << 8) | lo;
 
     cpu_set_reg(ctx->curr_inst->register_1, n);
 
