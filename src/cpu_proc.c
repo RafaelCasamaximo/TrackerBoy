@@ -165,7 +165,41 @@ static void proc_rlca(cpu_ctx* ctx)
 
 static void proc_add(cpu_ctx* ctx)
 {
+    u32 val = cpu_read_reg(ctx->curr_inst->register_1) + ctx->fetched_data;
 
+    bool is_16bit = is_16bit_register(ctx->curr_inst->register_1);
+
+    if(is_16bit)
+    {
+        emu_cycles(1);
+    }
+
+    if(ctx->curr_inst->register_1 == RT_SP)
+    {
+        val = cpu_read_reg(ctx->curr_inst->register_1) + (char)ctx->fetched_data;
+    }
+
+    int z = (val & 0xFF) == 0;
+    int h = (cpu_read_reg(ctx->curr_inst->register_1) & 0xF) + (ctx->fetched_data & 0xF) >= 0x10;
+    int c = (int)(cpu_read_reg(ctx->curr_inst->register_1) & 0xFF) + (ctx->fetched_data & 0xFF) >= 0x100;
+    
+    if(is_16bit)
+    {
+        z = -1;
+        h = (cpu_read_reg(ctx->curr_inst->register_1) & 0xFFF) + (ctx->fetched_data & 0xFFF) >= 0x1000;
+        u32 n = ((u32)cpu_read_reg(ctx->curr_inst->register_1)) + ((u32)ctx->fetched_data);
+        c = n >= 0x10000;
+    }
+
+    if(ctx->curr_inst->register_1 == RT_SP)
+    {
+        z = 0;
+        h = (cpu_read_reg(ctx->curr_inst->register_1) & 0xF) + (ctx->fetched_data & 0xF) >= 0x10;
+        c = (int)(cpu_read_reg(ctx->curr_inst->register_1) & 0xFF) + (ctx->fetched_data & 0xFF) >= 0x100;
+    }
+
+    cpu_set_reg(ctx->curr_inst->register_1, val & 0xFFFF);
+    cpu_set_flags(ctx, z, 0, h, c);
 }
 
 static void proc_rrca(cpu_ctx* ctx)
@@ -222,17 +256,37 @@ static void proc_halt(cpu_ctx* ctx)
 
 static void proc_adc(cpu_ctx* ctx)
 {
+    u16 u = ctx->fetched_data;
+    u16 a = ctx->registers.a;
+    u16 c = CPU_FLAG_C;
 
+    ctx->registers.a = (a + u + c) & 0xFF;
+
+    cpu_set_flags(ctx, ctx->registers.a == 0, 0, (a & 0xF) + (u & 0xF) + c > 0xF, a + u + c > 0xFF);
 }
 
 static void proc_sub(cpu_ctx* ctx)
 {
+    u16 val = cpu_read_reg(ctx->curr_inst->register_1) - ctx->fetched_data;
 
+    int z = val == 0;
+    int h = ((int)cpu_read_reg(ctx->curr_inst->register_1) & 0xF) - ((int)cpu_read_reg(ctx->fetched_data) & 0xF) < 0;
+    int c = ((int)cpu_read_reg(ctx->curr_inst->register_1)) - ((int)cpu_read_reg(ctx->fetched_data)) < 0;
+
+    cpu_set_reg(ctx->curr_inst->register_1, val);
+    cpu_set_flags(ctx, z, 1, h, c);
 }
 
 static void proc_sbc(cpu_ctx* ctx)
 {
+    u16 val = ctx->fetched_data + CPU_FLAG_C;
 
+    int z = cpu_read_reg(ctx->curr_inst->register_1) - val == 0;
+    int h = ((int)cpu_read_reg(ctx->curr_inst->register_1) & 0xF) - ((int)cpu_read_reg(ctx->fetched_data) & 0xF) - ((int)CPU_FLAG_C) < 0;
+    int c = ((int)cpu_read_reg(ctx->curr_inst->register_1)) - ((int)cpu_read_reg(ctx->fetched_data)) - ((int)CPU_FLAG_C) < 0;
+
+    cpu_set_reg(ctx->curr_inst->register_1, cpu_read_reg(ctx->curr_inst->register_1) - val);
+    cpu_set_flags(ctx, z, 1, h, c);
 }
 
 static void proc_and(cpu_ctx* ctx)
