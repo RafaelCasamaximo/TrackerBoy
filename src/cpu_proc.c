@@ -2,6 +2,7 @@
 #include <cpu.h>
 #include <emulator.h>
 #include <bus.h>
+#include <stack.h>
 
 static bool check_condition(cpu_ctx* ctx)
 {
@@ -195,7 +196,19 @@ static void proc_ret(cpu_ctx* ctx)
 
 static void proc_pop(cpu_ctx* ctx)
 {
+    u16 lo = stack_pop();
+    emu_cycles(1);
+    u16 hi = stack_pop();
+    emu_cycles(1);
 
+    u16 n = (hi >> 8) | lo;
+
+    cpu_set_reg(ctx->curr_inst->register_1, n);
+
+    if(ctx->curr_inst->register_1 == RT_AF)
+    {
+        cpu_set_reg(ctx->curr_inst->register_1, n & 0xFFF0);
+    }
 }
 
 static void proc_jp(cpu_ctx* ctx)
@@ -214,7 +227,15 @@ static void proc_call(cpu_ctx* ctx)
 
 static void proc_push(cpu_ctx* ctx)
 {
+    u16 hi = (cpu_read_reg(ctx->curr_inst->register_1) >> 8) & 0xFF;
+    emu_cycles(1);
+    stack_push(hi);
 
+    u16 lo = cpu_read_reg(ctx->curr_inst->register_1) & 0xFF;
+    emu_cycles(1);
+    stack_push(lo);
+
+    emu_cycles(1);
 }
 
 static void proc_rst(cpu_ctx* ctx)
@@ -236,7 +257,7 @@ static void proc_ldh(cpu_ctx* ctx)
 {
     if(ctx->curr_inst->register_1 == RT_A)
     {
-        cpu_set_reg(RT_A, cpu_read_reg(RT_C) | 0xFF00);
+        cpu_set_reg(RT_A, bus_read(0xFF00 | ctx->fetched_data));
     }
     else{
         bus_write(0xFF | ctx->fetched_data, ctx->registers.a);

@@ -44,18 +44,18 @@ bool cpu_step()
     {
         fetch_instruction();
         fetch_data();
-        // log_debug("%04X: %-7s A: 0x%2X BC: 0x%2X%2X DE: 0x%2X%2X HL: 0x%2X%2X %d,%d,%d,%d",
-        // ctx.registers.pc,
-        // inst_name_by_type(ctx.curr_inst->instruction_type),
-        // ctx.registers.a,
-        // ctx.registers.b, ctx.registers.c,
-        // ctx.registers.d, ctx.registers.e,
-        // ctx.registers.h, ctx.registers.l,
-        // BIT(ctx.registers.f, 7),
-        // BIT(ctx.registers.f, 6),
-        // BIT(ctx.registers.f, 5),
-        // BIT(ctx.registers.f, 4));
-        log_debug("0x%04X: %-7s", ctx.registers.pc, inst_name_by_type(ctx.curr_inst->instruction_type));
+        log_debug("%04X: %-7s A: 0x%2X BC: 0x%2X%2X DE: 0x%2X%2X HL: 0x%2X%2X %d,%d,%d,%d",
+        ctx.registers.pc,
+        inst_name_by_type(ctx.curr_inst->instruction_type),
+        ctx.registers.a,
+        ctx.registers.b, ctx.registers.c,
+        ctx.registers.d, ctx.registers.e,
+        ctx.registers.h, ctx.registers.l,
+        BIT(ctx.registers.f, 7),
+        BIT(ctx.registers.f, 6),
+        BIT(ctx.registers.f, 5),
+        BIT(ctx.registers.f, 4));
+        // log_debug("0x%04X: %-7s", ctx.registers.pc, inst_name_by_type(ctx.curr_inst->instruction_type));
         execute();
     }
 

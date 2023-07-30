@@ -60,3 +60,8 @@ void cpu_set_reg(Register_type type, u16 value)
         case RT_NONE: ; break;
     }
 }
+
+cpu_registers* cpu_get_registers()
+{
+    return &ctx.registers;
+}
