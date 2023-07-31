@@ -291,8 +291,8 @@ static void proc_sbc(cpu_ctx* ctx)
 
 static void proc_and(cpu_ctx* ctx)
 {
-    ctx->registers.a &= ctx->fetched_data & 0xFF;
-    cpu_set_flags(ctx, ctx->registers.a == 0, 0, 0, 0);
+    ctx->registers.a &= ctx->fetched_data;
+    cpu_set_flags(ctx, ctx->registers.a == 0, 0, 1, 0);
 }
 
 static void proc_xor(cpu_ctx* ctx)
@@ -309,7 +309,8 @@ static void proc_or(cpu_ctx* ctx)
 
 static void proc_cp(cpu_ctx* ctx)
 {
-
+    int n = (int)ctx->registers.a - ctx->fetched_data;
+    cpu_set_flags(ctx, n == 0, 1, (int)ctx->registers.a & 0x0F  - ((int)ctx->fetched_data & 0x0F) < 0, n < 0);
 }
 
 static void proc_ret(cpu_ctx* ctx)
