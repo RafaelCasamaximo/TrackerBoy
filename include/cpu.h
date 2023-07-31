@@ -41,12 +41,13 @@ void execute();
 void cpu_init();
 bool cpu_step();
 
-
 // CPU UTIL
 cpu_registers* cpu_get_registers();
 u16 cpu_read_reg(Register_type rt);
 void cpu_set_reg(Register_type type, u16 value);
 bool is_16bit_register(Register_type type);
+u8 cpu_read_reg8(Register_type rt);
+void cpu_set_reg8(Register_type rt, u8 value);
 
 // CPU PROC
 typedef void (*IN_PROC)(cpu_ctx *);

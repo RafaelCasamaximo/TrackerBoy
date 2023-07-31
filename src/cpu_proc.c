@@ -4,6 +4,27 @@
 #include <bus.h>
 #include <stack.h>
 
+Register_type cb_lookup[] = {
+    RT_B,
+    RT_C,
+    RT_D,
+    RT_E,
+    RT_H,
+    RT_L,
+    RT_HL,
+    RT_A,
+};
+
+Register_type decode_register(u8 reg)
+{
+    if(reg > 0b111)
+    {
+        return RT_NONE;
+    }
+
+    return cb_lookup[reg];
+}
+
 static bool check_condition(cpu_ctx* ctx)
 {
     bool z = CPU_FLAG_Z;
@@ -382,7 +403,136 @@ static void proc_rst(cpu_ctx* ctx)
 
 static void proc_cb(cpu_ctx* ctx)
 {
+    u8 op = ctx->fetched_data;
+    Register_type reg = decode_register(op & 0b111);
+    u8 bit = (op >> 3) & 0b111;
+    u8 bit_op = (op >> 6) & 0b11;
+    u8 reg_val = cpu_read_reg8(reg);
 
+    emu_cycles(1);
+
+    if(reg == RT_HL)
+    {
+        emu_cycles(2);
+    }
+
+    switch (bit_op)
+    {
+        // BIT
+        case 1:
+        {
+            cpu_set_flags(ctx, !(reg_val & (1 << bit)), 0, 1, -1);
+            return;
+        }
+        // RST
+        case 2:
+        {
+            reg_val &= ~(1 << bit);
+            cpu_set_reg8(reg, reg_val);
+            return;
+        }
+        // SET
+        case 3:
+        {
+            reg_val |= (1 << bit);
+            cpu_set_reg8(reg, reg_val);
+            return;
+        }
+    }
+
+    bool flagC = CPU_FLAG_C;
+
+    switch (bit)
+    {
+        // RLC
+        case 0:
+        {
+            bool setC = false;
+            u8 result = (reg_val << 1) & 0xFF;
+
+            if((reg_val & (1 << 7)) != 0)
+            {
+                result |= 1;
+                setC = true;
+            }
+
+            cpu_set_reg8(reg, reg_val);
+            cpu_set_flags(ctx, result == 0, 0, 0, setC);
+            return;
+        }
+        // RRC
+        case 1:
+        {
+            u8 old = reg_val;
+            reg_val >>= 1;
+            reg_val |= (old << 7);
+
+            cpu_set_reg8(reg, reg_val);
+            cpu_set_flags(ctx, !reg_val, 0, 0, old & 1);
+            return;
+        }
+        // RL
+        case 2:
+        {
+            u8 old = reg_val;
+            reg_val <<= 1;
+            reg_val |= flagC;
+
+            cpu_set_reg8(reg, reg_val);
+            cpu_set_flags(ctx, !reg_val, 0, 0, !!(old & 0x80));
+            return;
+        }
+        // RR
+        case 3:
+        {
+            u8 old = reg_val;
+            reg_val >>= 1;
+
+            reg_val |= (flagC << 7);
+
+            cpu_set_reg8(reg, reg_val);
+            cpu_set_flags(ctx, !reg_val, 0, 0, old & 1);
+            return;
+        }
+        // SLA
+        case 4:
+        {
+            u8 old = reg_val;
+            reg_val <<= 1;
+
+            cpu_set_reg8(reg, reg_val);
+            cpu_set_flags(ctx, !reg_val, 0, 0, !!(old & 0x80));
+            return;
+        }
+        // SRA
+        case 5:
+        {
+            u8 u = reg_val;
+            u = (int8_t)reg_val >> 1;
+
+            cpu_set_reg8(reg, u);
+            cpu_set_flags(ctx, !u, 0, 0, reg_val & 1);
+            return;
+        }
+        // SWAP
+        case 6:
+        {
+            reg_val = ((reg_val & 0xF0) >> 4) | ((reg_val & 0xF) << 4);
+            cpu_set_reg8(reg, reg_val);
+            cpu_set_flags(ctx, reg_val == 0, 0, 0, 0);
+            return;
+        }
+        // SRL
+        case 7:
+        {
+            u8 u = reg_val >> 1;
+            cpu_set_reg8(reg, u);
+            cpu_set_flags(ctx, !u, 0, 0, reg_val & 1);
+            return;
+        }
+    }
+
+    ERROR("INVALID CB INSTRUCTION: %02X", op);
 } 
 
 static void proc_reti(cpu_ctx* ctx)
@@ -412,6 +562,11 @@ static void proc_di(cpu_ctx* ctx)
 static void proc_ei(cpu_ctx* ctx)
 {
     ctx->int_master_enabled = true;
+}
+
+static void proc_err(cpu_ctx* ctx)
+{
+    ERROR("INSTRUCTION DOES NOT EXIST: %02X @ %x", ctx->curr_opcode, ctx->registers.pc);
 }
 
 // LD HL,SP+r8 has alternative mnemonic LDHL SP,r8
@@ -457,6 +612,7 @@ static IN_PROC processors[] = {
     [IN_LDH] = proc_ldh,
     [IN_DI] = proc_di,
     [IN_EI] = proc_ei,
+    [IN_ERR] = proc_err,
     // LD HL,SP+r8 has alternative mnemonic LDHL SP,r8
     [IN_LDHL] = proc_ldhl,
 };

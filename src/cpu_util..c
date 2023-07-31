@@ -1,4 +1,5 @@
 #include <cpu.h>
+#include <bus.h>
 
 extern cpu_ctx ctx;
 
@@ -64,4 +65,50 @@ void cpu_set_reg(Register_type type, u16 value)
 cpu_registers* cpu_get_registers()
 {
     return &ctx.registers;
+}
+
+u8 cpu_read_reg8(Register_type rt)
+{
+    switch (rt)
+    {
+        case RT_A: return ctx.registers.a;
+        case RT_F: return ctx.registers.f;
+        case RT_B: return ctx.registers.b;
+        case RT_C: return ctx.registers.c;
+        case RT_D: return ctx.registers.d;
+        case RT_E: return ctx.registers.e;
+        case RT_H: return ctx.registers.h;
+        case RT_L: return ctx.registers.l;
+        case RT_HL:
+        {
+            return bus_read(cpu_read_reg(RT_HL));
+        }
+        default:
+        {
+            ERROR("INVALID 8 BIT REGISTER READ: %d", rt);
+        }
+    }
+}
+
+void cpu_set_reg8(Register_type rt, u8 value)
+{
+    switch (rt)
+    {
+        case RT_A: ctx.registers.a = value & 0xFF; break;
+        case RT_F: ctx.registers.f = value & 0xFF; break;
+        case RT_B: ctx.registers.b = value & 0xFF; break;
+        case RT_C: ctx.registers.c = value & 0xFF; break;
+        case RT_D: ctx.registers.d = value & 0xFF; break;
+        case RT_E: ctx.registers.e = value & 0xFF; break;
+        case RT_H: ctx.registers.h = value & 0xFF; break;
+        case RT_L: ctx.registers.l = value & 0xFF; break;
+        case RT_HL:
+        {
+            bus_write(cpu_read_reg(RT_HL), value);
+        }
+        default:
+        {
+            ERROR("INVALID 8 BIT REGISTER WRITE: %d: %02X", rt, value);
+        }
+    }
 }
