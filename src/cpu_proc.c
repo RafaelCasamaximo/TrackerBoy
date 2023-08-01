@@ -4,16 +4,7 @@
 #include <bus.h>
 #include <stack.h>
 
-Register_type cb_lookup[] = {
-    RT_B,
-    RT_C,
-    RT_D,
-    RT_E,
-    RT_H,
-    RT_L,
-    RT_HL,
-    RT_A,
-};
+extern Register_type cb_lookup[];
 
 Register_type decode_register(u8 reg)
 {

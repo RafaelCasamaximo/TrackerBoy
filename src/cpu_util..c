@@ -94,17 +94,18 @@ void cpu_set_reg8(Register_type rt, u8 value)
 {
     switch (rt)
     {
-        case RT_A: ctx.registers.a = value & 0xFF; break;
-        case RT_F: ctx.registers.f = value & 0xFF; break;
-        case RT_B: ctx.registers.b = value & 0xFF; break;
-        case RT_C: ctx.registers.c = value & 0xFF; break;
-        case RT_D: ctx.registers.d = value & 0xFF; break;
-        case RT_E: ctx.registers.e = value & 0xFF; break;
-        case RT_H: ctx.registers.h = value & 0xFF; break;
-        case RT_L: ctx.registers.l = value & 0xFF; break;
+        case RT_A: ctx.registers.a = value & 0xFF; return;
+        case RT_F: ctx.registers.f = value & 0xFF; return;
+        case RT_B: ctx.registers.b = value & 0xFF; return;
+        case RT_C: ctx.registers.c = value & 0xFF; return;
+        case RT_D: ctx.registers.d = value & 0xFF; return;
+        case RT_E: ctx.registers.e = value & 0xFF; return;
+        case RT_H: ctx.registers.h = value & 0xFF; return;
+        case RT_L: ctx.registers.l = value & 0xFF; return;
         case RT_HL:
         {
             bus_write(cpu_read_reg(RT_HL), value);
+            return;
         }
         default:
         {

@@ -1,4 +1,8 @@
 #include <instructions.h>
+#include <lookup.h>
+
+extern char* inst_lookup[];
+extern char* registers_lookup[0xF];
 
 Instruction instructions[0x100] = {
 
@@ -230,7 +234,7 @@ Instruction instructions[0x100] = {
     [0xC8] = {IN_RET, AM_IMP, RT_NONE, RT_NONE, CT_Z},      // Implemented
     [0xC9] = {IN_RET},                                      // Implemented
     [0xCA] = {IN_JP, AM_A16, RT_NONE, RT_NONE, CT_Z},       // Implemented
-    [0xCB] = {IN_CB, AM_D8},
+    [0xCB] = {IN_CB, AM_D8},                                // Implemented
     [0xCC] = {IN_CALL, AM_A16, RT_NONE, RT_NONE, CT_Z},     // Implemented
     [0xCD] = {IN_CALL, AM_A16, RT_NONE, RT_NONE},           // Implemented
     [0xCE] = {IN_ADC, AM_R_D8, RT_A},                       // Implemented
@@ -302,59 +306,12 @@ Instruction* intruction_by_opcode(u8 opcode)
     return &instructions[opcode];
 }
 
-char* inst_lookup[] = {
-    "<NONE>",
-    "NOP",
-    "LD",
-    "INC",
-    "DEC",
-    "RLCA",
-    "ADD",
-    "RRCA",
-    "STOP",
-    "RLA",
-    "JR",
-    "RRA",
-    "DAA",
-    "CPL",
-    "SCF",
-    "CCF",
-    "HALT",
-    "ADC",
-    "SUB",
-    "SBC",
-    "AND",
-    "XOR",
-    "OR",
-    "CP",
-    "RET",
-    "POP",
-    "JP",
-    "CALL",
-    "PUSH",
-    "RST",
-    "CB", 
-    "RETI",
-    "LDH",
-    "DI",
-    "EI",
-    // LD HL,SP+r8 has alternative mnemonic LDHL SP,r8
-    "LDHL",
-    //CB instructions
-    "CB_RLC",
-    "CB_RRC",
-    "CB_RL",
-    "CB_RR",
-    "CB_SLA",
-    "CB_SRA",
-    "CB_SWAP",
-    "CB_SRL",
-    "CB_BIT",
-    "CB_RES",
-    "CB_SET",
-};
-
 char* inst_name_by_type(Instruction_type type)
 {
     return inst_lookup[type];
+}
+
+char* register_name_by_type(Register_type type)
+{
+    return registers_lookup[type];
 }

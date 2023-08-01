@@ -2,6 +2,7 @@
 #include <bus.h>
 #include <emulator.h>
 #include <common.h>
+#include <debug.h>
 
 cpu_ctx ctx = {0};
 
@@ -47,19 +48,19 @@ bool cpu_step()
         fetch_instruction();
         fetch_data();
 
-        log_debug("%04X: (%02X) %-7s A: 0x%02X BC: 0x%02X%02X DE: 0x%02X%02X HL: 0x%02X%02X %c,%c,%c,%c",
-        pc,
-        ctx.curr_opcode,
-        inst_name_by_type(ctx.curr_inst->instruction_type),
-        ctx.registers.a,
-        ctx.registers.b, ctx.registers.c,
-        ctx.registers.d, ctx.registers.e,
-        ctx.registers.h, ctx.registers.l,
-        BIT(ctx.registers.f, 7) ? 'Z' : '-',
-        BIT(ctx.registers.f, 6) ? 'N' : '-',
-        BIT(ctx.registers.f, 5) ? 'H' : '-',
-        BIT(ctx.registers.f, 4) ? 'C' : '-');
-        // log_debug("0x%04X: %-7s", ctx.registers.pc, inst_name_by_type(ctx.curr_inst->instruction_type));
+        debug_print();
+        // log_debug("%04X: (%02X) %-7s A: 0x%02X BC: 0x%02X%02X DE: 0x%02X%02X HL: 0x%02X%02X %c,%c,%c,%c",
+        // pc,
+        // ctx.curr_opcode,
+        // inst_name_by_type(ctx.curr_inst->instruction_type),
+        // ctx.registers.a,
+        // ctx.registers.b, ctx.registers.c,
+        // ctx.registers.d, ctx.registers.e,
+        // ctx.registers.h, ctx.registers.l,
+        // BIT(ctx.registers.f, 7) ? 'Z' : '-',
+        // BIT(ctx.registers.f, 6) ? 'N' : '-',
+        // BIT(ctx.registers.f, 5) ? 'H' : '-',
+        // BIT(ctx.registers.f, 4) ? 'C' : '-');
         execute();
     }
 
