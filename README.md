@@ -1,3 +1,4 @@
+
 <p align="center">
   <img src="./images/trackerBoy.png">
 </p>
@@ -8,7 +9,7 @@ TrackerBoy is an open-source DMG Gameboy emulator with debugging tools. This emu
 
 ## About the Project
 
-The Gameboy, released by Nintendo in 1989, is a classic handheld gaming console with a large library of iconic games. TrackerBoy aims to recreate the functionality of the original DMG Gameboy, allowing you to relive the nostalgia of those beloved games on modern hardware.
+The Gameboy, released by Nintendo in 1989, is a classic handheld gaming console with a large library of iconic games. TrackerBoy aims to recreate the functionality of the original DMG Gameboy, allowing you to play those beloved games on modern hardware.
 
 Additionally, TrackerBoy is equipped with debugging tools, which can be especially useful for developers or enthusiasts interested in reverse-engineering or understanding how Gameboy games work under the hood. The debugging features aim to help identify and analyze various aspects of the game's behavior, memory usage, and CPU instructions.
 
@@ -53,6 +54,26 @@ After successfully building TrackerBoy, you can run the emulator from the termin
 ```
 
 Replace `<path_to_gameboy_rom>` with the actual file path of the Gameboy ROM you want to play. The emulator should load the game, and you can start playing it right away.
+
+## Inspiration
+
+This emulator is inspired by the [Low Level Devel Gameboy emulator](https://github.com/rockytriton/LLD_gbemu) and the additional features of the [Dromaius Gameboy emulator](https://github.com/ThomasRinsma/dromaius).
+
+## Features
+
+For now only the CPU instructions are implemented. But the plan is to use [Dear ImGui](https://github.com/ocornut/imgui) with SDL2 renderer to build a disassembler, a memory map and a tilemap, as well as a state-viewer for the CPU registers and flags.
+
+## Tests
+
+ - [ ] [dmg-acid 2;](https://github.com/mattcurrie/dmg-acid2)
+ - [ ] [gb-test-roms:](https://github.com/retrio/gb-test-roms)
+	 - [ ] cpu_instrs;
+	 - [ ] dmg_sound;
+	 - [ ] instr_timing;
+	 - [ ] interrupt_time;
+	 - [ ] mem_timing-2;
+	 - [ ] mem_timing;
+	 - [ ] oam_bug;
 
 ---
 
