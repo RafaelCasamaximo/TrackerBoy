@@ -5,7 +5,31 @@
 
 extern cpu_ctx ctx;
 
-char* debug_build_base(int numStrings, const char* format, ...)
+/*
+    AM_IMP,         OK
+    AM_R_D16,       OK
+    AM_R_R,         OK
+    AM_MR_R,        OK
+    AM_R,           OK
+    AM_R_D8,        OK
+    AM_R_MR,        OK
+    AM_R_HLI,       OK
+    AM_R_HLD,       OK
+    AM_HLI_R,       OK
+    AM_HLD_R,       OK
+    AM_R_A8,        OK
+    AM_A8_R,        OK
+    AM_HL_SPR,      OK
+    AM_D8,          OK
+    AM_A16,         OK
+    AM_MR_D8,       OK
+    AM_MR,          OK
+    AM_A16_R,       OK
+    AM_R_A16,       OK
+
+*/
+
+char* debug_build_base(const char* format, ...)
 {
     // Calculate the total length of the concatenated string
     va_list args;
@@ -31,10 +55,10 @@ char* debug_build_base(int numStrings, const char* format, ...)
 
 char* debug_build_instruction()
 {
-    u16 pc = ctx.registers.pc;
+    u16 pcLine = ctx.registers.pc - 1;
 
-    char* instruction = debug_build_base(3, "%04X: (%02X) %-5s",
-    pc,
+    char* instruction = debug_build_base("%04X: (%02X) %-5s",
+    pcLine,
     ctx.curr_opcode,
     inst_name_by_type(ctx.curr_inst->instruction_type));
 
@@ -44,20 +68,27 @@ char* debug_build_instruction()
     {
         case AM_IMP:
         {
-            inst_content = debug_build_base(0, "");
+
+            if(ctx.curr_inst->instruction_type == IN_RST)
+            {
+                inst_content = debug_build_base("0x%02X", ctx.curr_inst->param);
+                break;
+            }
+            
+            inst_content = debug_build_base("");
             break;
         }
 
         case AM_R:
         {
-            inst_content = debug_build_base(1, "%s",
+            inst_content = debug_build_base("%s",
             register_name_by_type(ctx.curr_inst->register_1));
             break;
         }
 
         case AM_R_R:
         {
-            inst_content = debug_build_base(2, "%s, %s",
+            inst_content = debug_build_base("%s, %s",
             register_name_by_type(ctx.curr_inst->register_1),
             register_name_by_type(ctx.curr_inst->register_2));
             break;
@@ -65,7 +96,7 @@ char* debug_build_instruction()
 
         case AM_MR_R:
         {
-            inst_content = debug_build_base(2, "(0x%04X), %s",
+            inst_content = debug_build_base("0x%04X, %s",
             cpu_read_reg(ctx.curr_inst->register_1),
             register_name_by_type(ctx.curr_inst->register_2));
             break;
@@ -73,7 +104,7 @@ char* debug_build_instruction()
 
         case AM_R_MR:
         {
-            inst_content = debug_build_base(2, "%s, (0x%04X)",
+            inst_content = debug_build_base("%s, (0x%04X)",
             register_name_by_type(ctx.curr_inst->register_1),
             cpu_read_reg(ctx.curr_inst->register_2));
             break;
@@ -81,7 +112,7 @@ char* debug_build_instruction()
 
         case AM_R_HLI:
         {
-            inst_content = debug_build_base(2, "%s, (0x%04X++)",
+            inst_content = debug_build_base("%s, (0x%04X++)",
             register_name_by_type(ctx.curr_inst->register_1),
             cpu_read_reg(ctx.curr_inst->register_2));
             break;
@@ -89,7 +120,7 @@ char* debug_build_instruction()
 
         case AM_R_HLD:
         {
-            inst_content = debug_build_base(2, "%s, (0x%04X--)",
+            inst_content = debug_build_base("%s, (0x%04X--)",
             register_name_by_type(ctx.curr_inst->register_1),
             cpu_read_reg(ctx.curr_inst->register_2));
             break;
@@ -97,7 +128,7 @@ char* debug_build_instruction()
 
         case AM_HLI_R:
         {
-            inst_content = debug_build_base(2, "(0x%04X++), %s",
+            inst_content = debug_build_base("(0x%04X++), %s",
             cpu_read_reg(ctx.curr_inst->register_1),
             register_name_by_type(ctx.curr_inst->register_2));
             break;
@@ -105,7 +136,7 @@ char* debug_build_instruction()
 
         case AM_HLD_R:
         {
-            inst_content = debug_build_base(2, "(0x%04X--), %s",
+            inst_content = debug_build_base("(0x%04X--), %s",
             cpu_read_reg(ctx.curr_inst->register_1),
             register_name_by_type(ctx.curr_inst->register_2));
             break;
@@ -113,50 +144,64 @@ char* debug_build_instruction()
 
         case AM_R_A8:
         {
-            inst_content = debug_build_base(2, "%s, (0x%02X)",
+            if(ctx.curr_inst->register_1 != RT_A)
+            {
+                inst_content = debug_build_base("%s, (0x%02X)",
+                register_name_by_type(ctx.curr_inst->register_1),
+                0xFF | ctx.fetched_data);
+                break;
+            }
+            inst_content = debug_build_base("%s, (0x%04X)",
             register_name_by_type(ctx.curr_inst->register_1),
-            ctx.registers.pc-1);
+            0xFF00 | ctx.fetched_data);
             break;
         }
 
         case AM_R_D8:
         {
-            inst_content = debug_build_base(2, "%s, 0x%02X",
+            inst_content = debug_build_base("%s, 0x%02X",
             register_name_by_type(ctx.curr_inst->register_1),
-            ctx.fetched_data);
+            ctx.fetched_data & 0xFF);
             break;
         }
 
         case AM_A8_R:
         {
-            inst_content = debug_build_base(2, "(0x%02X), %s",
-            ctx.registers.pc-1,
+            inst_content = debug_build_base("0x%04X, %s",
+            0xFF00 | ctx.fetched_data,
             register_name_by_type(ctx.curr_inst->register_2));
             break;
         }
 
         case AM_HL_SPR:
         {
-            inst_content = debug_build_base(2, "(0x%04X), (SP+0x%04X)",
+            inst_content = debug_build_base("0x%04X, (SP+0x%04X)",
             cpu_read_reg(ctx.curr_inst->register_1),
-            ctx.registers.pc-1);
+            ctx.fetched_data);
             break;
         }
 
         case AM_D8:
         {
-            inst_content = debug_build_base(1, "0x%02X",
+
+            if(ctx.curr_inst->instruction_type == IN_CB)
+            {
+                inst_content = debug_build_base(0, "NO_IMPL");    
+                break;
+            }
+
+            inst_content = debug_build_base("0x%02X",
             ctx.fetched_data);
             break;
         }
 
         case AM_A16_R:
         {
-            u16 hi = bus_read(ctx.registers.pc);
-            u16 lo = bus_read(ctx.registers.pc - 1);
+            u16 lo = bus_read(ctx.registers.pc - 2);
+            u16 hi = bus_read(ctx.registers.pc - 1);
             u16 addr = lo | (hi << 8);
 
-            inst_content = debug_build_base(2, "(0x%04X), %s",
+            inst_content = debug_build_base("0x%04X, %s",
             addr,
             register_name_by_type(ctx.curr_inst->register_2));
             break;
@@ -164,7 +209,7 @@ char* debug_build_instruction()
 
         case AM_MR_D8:
         {
-            inst_content = debug_build_base(2, "(0x%04X), 0x%02X",
+            inst_content = debug_build_base("0x%04X, 0x%02X",
             cpu_read_reg(ctx.curr_inst->register_1),
             ctx.fetched_data);
             break;
@@ -172,60 +217,50 @@ char* debug_build_instruction()
 
         case AM_MR:
         {
-            inst_content = debug_build_base(2, "(0x%04X)",
+            inst_content = debug_build_base("0x%04X",
             cpu_read_reg(ctx.curr_inst->register_1));
             break;
         }
 
         case AM_R_A16:
         {
-            inst_content = debug_build_base(2, "%s, (0x%04X)",
+            u16 lo = bus_read(ctx.registers.pc - 2);
+            u16 hi = bus_read(ctx.registers.pc - 1);
+            u16 addr = lo | (hi << 8);
+            inst_content = debug_build_base("%s, (0x%04X)",
             register_name_by_type(ctx.curr_inst->register_1),
-            ctx.fetched_data);
+            addr);
             break;  
         }
 
         case AM_R_D16:
         {
-            u16 hi = bus_read(ctx.registers.pc);
-            u16 lo = bus_read(ctx.registers.pc - 1);
-            u16 addr = lo | (hi << 8);
-            inst_content = debug_build_base(2, "%s, (0x%04X)",
+            inst_content = debug_build_base("%s, 0x%04X",
             register_name_by_type(ctx.curr_inst->register_1),
-            addr);
+            ctx.fetched_data);
             break;  
         }
 
         case AM_A16:
         {
-            inst_content = debug_build_base(1, "(0x%04X)",
+            inst_content = debug_build_base("(0x%04X)",
             ctx.fetched_data);
             break;  
         }
 
-        case AM_D16:
-        {
-            u16 hi = bus_read(ctx.registers.pc);
-            u16 lo = bus_read(ctx.registers.pc - 1);
-            u16 addr = lo | (hi << 8);
-            inst_content = debug_build_base(1, "0x%04X",
-            addr);
-            break;
-        }
-
         default:
         {
-            inst_content = debug_build_base(0, "");
+            inst_content = debug_build_base("");
             break;
         }
     }
 
-    return debug_build_base(1, "%s %-7s", instruction, inst_content);
+    return debug_build_base("%s %-7s", instruction, inst_content);
 }
 
 char* debug_build_registers()
 {
-    return debug_build_base(7, "A: 0x%02X BC: 0x%02X%02X DE: 0x%02X%02X HL: 0x%02X%02X",
+    return debug_build_base("A: 0x%02X BC: 0x%02X%02X DE: 0x%02X%02X HL: 0x%02X%02X",
     ctx.registers.a,
     ctx.registers.b, ctx.registers.c,
     ctx.registers.d, ctx.registers.e,
@@ -234,7 +269,7 @@ char* debug_build_registers()
 
 char* debug_build_flags()
 {
-    return debug_build_base(4, "%c,%c,%c,%c",
+    return debug_build_base("%c,%c,%c,%c",
     BIT(ctx.registers.f, 7) ? 'Z' : '-',
     BIT(ctx.registers.f, 6) ? 'N' : '-',
     BIT(ctx.registers.f, 5) ? 'H' : '-',
@@ -249,11 +284,16 @@ void debug_print()
     char* flags = debug_build_flags();
 
 
-    printf("%s%s\t%s%s\t%s%s%s\n",
-    ANSI_COLOR_BRIGHT_GREEN, intruction,
-    ANSI_COLOR_BRIGHT_CYAN, registers,
-    ANSI_COLOR_BRIGHT_YELLOW, flags,
-    ANSI_COLOR_RESET);
+    // printf("%s%s\t%s%s\t%s%s%s\n",
+    // ANSI_COLOR_BRIGHT_GREEN, intruction,
+    // ANSI_COLOR_BRIGHT_CYAN, registers,
+    // ANSI_COLOR_BRIGHT_YELLOW, flags,
+    // ANSI_COLOR_RESET);
+
+    printf("%-35s%-42s%-10s\n",
+    intruction,
+    registers,
+    flags);
 
     free(intruction);
     free(registers);

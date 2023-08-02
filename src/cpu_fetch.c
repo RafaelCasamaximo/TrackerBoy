@@ -210,7 +210,6 @@ void fetch_data()
         // Works with little endian
         case AM_R_D16:
         case AM_A16:
-        case AM_D16:
         {
             u16 lo = bus_read(ctx.registers.pc);
             emu_cycles(1);
