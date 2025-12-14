@@ -1,15 +1,16 @@
 #pragma once
 
-#include <common.h>
+#include <stdbool.h>
+#include <cpu.h>
+#include <mmu.h>
 
-typedef struct {
+typedef struct Emulator 
+{
+    CPU cpu;
+    MMU mmu;
+    bool is_running;
     bool paused;
-    bool running;
-    u8 ticks;
-} emu_ctx;
+    bool debug_mode;
+} Emulator;
 
-
-emu_ctx* emu_get_ctx();
-int emu_run(int argc, char** argv);
-
-void emu_cycles(int emu_cycles);
+void emu_run(int argc, char** argv);
