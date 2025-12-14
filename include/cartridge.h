@@ -17,3 +17,5 @@ typedef struct {
 
 int load_cartridge(const char* filepath, Cartridge* cart);
 void free_cartridge(Cartridge* cart);
+void write_cartridge(Cartridge* cart, uint16_t address, uint8_t value);
+uint8_t read_cartridge(Cartridge* cart, uint16_t address);

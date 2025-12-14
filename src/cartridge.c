@@ -76,3 +76,21 @@ void free_cartridge(Cartridge *cart) {
         cart->ram_data = NULL;
     }
 }
+// Basic read/write for ROM-only cartridges (no MBC support)
+
+void write_cartridge(Cartridge *cart, uint16_t address, uint8_t value)
+{
+    // ROM-only: writes have no effect
+    (void)cart;
+    (void)address;
+    (void)value;
+    // TODO: Retornar erro ou logar tentativa de escrita em ROM
+}
+
+uint8_t read_cartridge(Cartridge *cart, uint16_t address)
+{
+    if (address < cart->rom_size) {
+        return cart->rom_data[address];
+    }
+    return 0xFF; // Open bus
+}
