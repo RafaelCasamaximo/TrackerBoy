@@ -13,4 +13,6 @@ typedef struct Emulator
     bool debug_mode;
 } Emulator;
 
+void initialize_emulator(Emulator* emu);
+
 void emu_run(int argc, char** argv);

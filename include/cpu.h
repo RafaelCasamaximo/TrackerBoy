@@ -61,3 +61,5 @@ typedef struct {
     bool interrupts_enabled;
     bool halted;
 } CPU;
+
+void initialize_cpu(CPU* cpu);
