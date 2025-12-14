@@ -15,10 +15,7 @@ void emu_run(int argc, char** argv)
 {
     Emulator emu;
     initialize_emulator(&emu);
+    emu.is_running = true;
 
-    // Initialize emulator with a clean state
-
-
-
-    // Emulator implementation goes here
+    // Main emulation loop would go here
 }
