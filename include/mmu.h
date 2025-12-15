@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <emulator.h>
 
 typedef struct MMU 
 {
@@ -9,8 +10,8 @@ typedef struct MMU
     size_t size;
 } MMU;
 
-void initialize_mmu(MMU* mmu);
-void free_mmu(MMU* mmu);
+void initialize_mmu(Emulator* emu);
+void free_mmu(Emulator* emu);
 
-uint8_t mmu_read_byte(MMU* mmu, uint16_t address);
-void mmu_write_byte(MMU* mmu, uint16_t address, uint8_t value);
+uint8_t mmu_read_byte(Emulator* emu, uint16_t address);
+void mmu_write_byte(Emulator* emu, uint16_t address, uint8_t value);

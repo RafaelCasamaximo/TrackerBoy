@@ -3,8 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void initialize_emulator(Emulator* emu)
+void initialize_emulator(Emulator* emu, char* cartridge_path)
 {
+
+    if (load_cartridge(cartridge_path, &emu->cart) != 0) {
+        printf("Error loading cartridge\n");
+        return;
+    }
+
     initialize_cpu(&emu->cpu);
     initialize_mmu(&emu->mmu);
 
@@ -17,14 +23,8 @@ void initialize_emulator(Emulator* emu)
 void emu_run(int argc, char** argv)
 {
     Emulator emu;
-    initialize_emulator(&emu);
+    initialize_emulator(&emu, argv[1]);
 
-    Cartridge cart;
-    if (load_cartridge(argv[1], &cart) != 0) {
-        // Handle error loading cartridge
-        printf("Error loading cartridge\n");
-        return;
-    }
 
     emu.is_running = true;
 
