@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+typedef struct Emulator Emulator;
+
 /**
  * Estrutura que representa a CPU do emulador.
  */
@@ -27,15 +29,18 @@ typedef struct {
     bool halted;
 } CPU;
 
-uint16_t get_af(const CPU* cpu);
-uint16_t get_bc(const CPU* cpu);
-uint16_t get_de(const CPU* cpu);
-uint16_t get_hl(const CPU* cpu);
+uint16_t get_af(Emulator* emu);
+uint16_t get_bc(Emulator* emu);
+uint16_t get_de(Emulator* emu);
+uint16_t get_hl(Emulator* emu);
 
-void set_af(CPU* cpu, uint16_t val);
-void set_bc(CPU* cpu, uint16_t val);
-void set_de(CPU* cpu, uint16_t val);
-void set_hl(CPU* cpu, uint16_t val);
+void set_af(Emulator* emu, uint16_t val);
+void set_bc(Emulator* emu, uint16_t val);
+void set_de(Emulator* emu, uint16_t val);
+void set_hl(Emulator* emu, uint16_t val);
 
 
-void initialize_cpu(CPU* cpu);
+void initialize_cpu(Emulator* emu);
+
+uint8_t cpu_read_u8(Emulator* emu, uint16_t address);
+uint16_t cpu_read_u16(Emulator* emu, uint16_t address);

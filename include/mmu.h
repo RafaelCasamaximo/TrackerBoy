@@ -2,7 +2,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <emulator.h>
+
+typedef struct Emulator Emulator;
 
 typedef struct MMU 
 {

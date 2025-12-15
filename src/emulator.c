@@ -11,8 +11,8 @@ void initialize_emulator(Emulator* emu, char* cartridge_path)
         return;
     }
 
-    initialize_cpu(&emu->cpu);
-    initialize_mmu(&emu->mmu);
+    initialize_cpu(emu);
+    initialize_mmu(emu);
 
     emu->is_running = false;
     emu->paused = false;
