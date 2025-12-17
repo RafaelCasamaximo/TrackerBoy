@@ -11,6 +11,107 @@ void opcode_00(Emulator* emu, uint16_t opcode) {
     // Simply do nothing
 }
 
+// LD BC, n16: Load 16-bit immediate into BC
+void opcode_01(Emulator* emu, uint16_t opcode) {
+    uint16_t value = cpu_read_u16(emu, emu->cpu.PC);
+    emu->cpu.B = (value >> 8) & 0xFF;
+    emu->cpu.C = value & 0xFF;
+}
+
+// LD (BC), A: Store A into address pointed by BC
+void opcode_02(Emulator* emu, uint16_t opcode) {
+    uint16_t address = get_bc(emu);
+    mmu_write_byte(emu, address, emu->cpu.A);
+}
+
+// INC BC: Increment BC register pair
+void opcode_03(Emulator* emu, uint16_t opcode) {
+    uint16_t bc = get_bc(emu);
+    bc++;
+    emu->cpu.B = (bc >> 8) & 0xFF;
+    emu->cpu.C = bc & 0xFF;
+}
+
+// INC B: Increment register B
+void opcode_04(Emulator* emu, uint16_t opcode) {
+    emu->cpu.B++;
+    // Set flags accordingly (not implemented here)
+}
+
+// DEC B: Decrement register B
+void opcode_05(Emulator* emu, uint16_t opcode) {
+    emu->cpu.B--;
+    // Set flags accordingly (not implemented here)
+}
+
+// LD B, n8: Load 8-bit immediate into B
+void opcode_06(Emulator* emu, uint16_t opcode) {
+    uint8_t value = cpu_read_next_u8(emu);
+    emu->cpu.B = value;
+}
+
+// RLCA: Rotate A left with carry
+void opcode_07(Emulator* emu, uint16_t opcode) {
+    uint8_t carry = (emu->cpu.A & 0x80) >> 7;
+    emu->cpu.A = (emu->cpu.A << 1) | carry;
+    // Set flags accordingly (not implemented here)
+}
+
+// LD (a16), SP: Store SP at address a16
+void opcode_08(Emulator* emu, uint16_t opcode) {
+    uint16_t address = cpu_read_u16(emu, emu->cpu.PC);
+    mmu_write_byte(emu, address, emu->cpu.SP & 0xFF);         // Low byte
+    mmu_write_byte(emu, address + 1, (emu->cpu.SP >> 8) & 0xFF); // High byte
+}
+
+// ADD HL, BC: Add BC to HL
+void opcode_09(Emulator* emu, uint16_t opcode) {
+    uint16_t hl = get_hl(emu);
+    uint16_t bc = get_bc(emu);
+    hl += bc;
+    set_hl(emu, hl);
+    // Set flags accordingly (not implemented here)
+}
+
+// LD A, (BC): Load value at address BC into A
+void opcode_0A(Emulator* emu, uint16_t opcode) {
+    uint16_t address = get_bc(emu);
+    emu->cpu.A = cpu_read_u8(emu, address);
+}
+
+// DEC BC: Decrement BC register pair
+void opcode_0B(Emulator* emu, uint16_t opcode) {
+    uint16_t bc = get_bc(emu);
+    bc--;
+    emu->cpu.B = (bc >> 8) & 0xFF;
+    emu->cpu.C = bc & 0xFF;
+}
+
+// INC C: Increment register C
+void opcode_0C(Emulator* emu, uint16_t opcode) {
+    emu->cpu.C++;
+    // Set flags accordingly (not implemented here)
+}
+
+// DEC C: Decrement register C
+void opcode_0D(Emulator* emu, uint16_t opcode) {
+    emu->cpu.C--;
+    // Set flags accordingly (not implemented here)
+}
+
+// LD C, n8: Load 8-bit immediate into C
+void opcode_0E(Emulator* emu, uint16_t opcode) {
+    uint8_t value = cpu_read_next_u8(emu);
+    emu->cpu.C = value;
+}
+
+void opcode_0F(Emulator* emu, uint16_t opcode) {
+    // RRCA: Rotate A right with carry
+    uint8_t carry = emu->cpu.A & 0x01;
+    emu->cpu.A = (emu->cpu.A >> 1) | (carry << 7);
+    // Set flags accordingly (not implemented here)
+}
+
 void opcode_C3(Emulator* emu, uint16_t opcode) {
     // JP nn: Jump to address nn
     uint16_t address = cpu_read_u16(emu, emu->cpu.PC);
@@ -23,21 +124,21 @@ void opcode_C3(Emulator* emu, uint16_t opcode) {
 
 InstructionFunc instructions[256] = {
     opcode_00,    // 0x00
-    op_notImplemented,    // 0x01
-    op_notImplemented,    // 0x02
-    op_notImplemented,    // 0x03
-    op_notImplemented,    // 0x04
-    op_notImplemented,    // 0x05
-    op_notImplemented,    // 0x06
-    op_notImplemented,    // 0x07
-    op_notImplemented,    // 0x08
-    op_notImplemented,    // 0x09
-    op_notImplemented,    // 0x0A
-    op_notImplemented,    // 0x0B
-    op_notImplemented,    // 0x0C
-    op_notImplemented,    // 0x0D
-    op_notImplemented,    // 0x0E
-    op_notImplemented,    // 0x0F
+    opcode_01,    // 0x01
+    opcode_02,    // 0x02
+    opcode_03,    // 0x03
+    opcode_04,    // 0x04
+    opcode_05,    // 0x05
+    opcode_06,    // 0x06
+    opcode_07,    // 0x07
+    opcode_08,    // 0x08
+    opcode_09,    // 0x09
+    opcode_0A,    // 0x0A
+    opcode_0B,    // 0x0B
+    opcode_0C,    // 0x0C
+    opcode_0D,    // 0x0D
+    opcode_0E,    // 0x0E
+    opcode_0F,    // 0x0F
     op_notImplemented,    // 0x10
     op_notImplemented,    // 0x11
     op_notImplemented,    // 0x12
