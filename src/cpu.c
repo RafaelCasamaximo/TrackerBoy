@@ -1,21 +1,25 @@
 #include <cpu.h>
 #include <emulator.h>
+#include <instructions.h>
 
 void initialize_cpu(Emulator* emu)
 {
-    emu->cpu.A = 0;
-    emu->cpu.F = 0;
-    emu->cpu.B = 0;
-    emu->cpu.C = 0;
-    emu->cpu.D = 0;
-    emu->cpu.E = 0;
-    emu->cpu.H = 0;
-    emu->cpu.L = 0;
-    emu->cpu.PC = 0x0000; // Program Counter starts at 0
-    emu->cpu.SP = 0xFFFE; // Stack Pointer starts at top of memory
+    // Registradores Principais (Valores Pós-BIOS)
+    emu->cpu.A = 0x01;
+    emu->cpu.F = 0xB0; // Z=1, N=0, H=1, C=1 (aproximadamente)
+    emu->cpu.B = 0x00;
+    emu->cpu.C = 0x13;
+    emu->cpu.D = 0x00;
+    emu->cpu.E = 0xD8;
+    emu->cpu.H = 0x01;
+    emu->cpu.L = 0x4D;
+    // Ponteiros Críticos
+    emu->cpu.SP = 0xFFFE; // Stack Pointer no topo da memória
+    emu->cpu.PC = 0x0100; // Ponto de entrada do Cartucho (Pula a BIOS)
 
+    // Estado Interno
     emu->cpu.halted = false;
-    emu->cpu.interrupts_enabled = false;
+    emu->cpu.interrupts_enabled = false; // A BIOS desliga interrupções antes de passar o controle
 }
 
 uint16_t get_af(Emulator* emu) {
@@ -55,9 +59,7 @@ void set_hl(Emulator* emu, uint16_t val) {
 }
 
 uint8_t cpu_read_u8(Emulator* emu, uint16_t address) {
-    // Reads a byte from the given address in memory
-    // Replace this with actual memory access in a real emulator
-    return 0;
+    return mmu_read_byte(emu, address);
 }
 
 uint8_t cpu_read_next_u8(Emulator* emu) {
@@ -71,4 +73,11 @@ uint16_t cpu_read_u16(Emulator* emu, uint16_t address) {
     uint8_t low = cpu_read_u8(emu, address);
     uint8_t high = cpu_read_u8(emu, address + 1);
     return ((uint16_t)high << 8) | low;
+}
+
+void cpu_step(Emulator* emu) {
+    // Fetch the next opcode
+    uint8_t opcode = cpu_read_next_u8(emu);
+    // Execute the instruction
+    instructions[opcode](emu, opcode);
 }

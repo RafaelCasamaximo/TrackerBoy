@@ -19,10 +19,10 @@ uint8_t mmu_read_byte(Emulator* emu, uint16_t address)
 {
     if (address < 0x4000) {
         // 0000-3FFF: ROM bank 00
-        // TODO: Ler da ROM fixa
+        return emu->cart.rom_data[address];
     } else if (address < 0x8000) {
         // 4000-7FFF: ROM bank NN
-        // TODO: Ler da ROM bancável
+        return emu->cart.rom_data[address];
     } else if (address < 0xA000) {
         // 8000-9FFF: VRAM
         // TODO: Ler da VRAM
@@ -50,10 +50,6 @@ uint8_t mmu_read_byte(Emulator* emu, uint16_t address)
     } else if (address == 0xFFFF) {
         // FFFF: Interrupt Enable Register
         // TODO: Ler do IE
-    }
-    // Por enquanto, retorna da memória linear (placeholder)
-    if (address < emu->mmu.size) {
-        return emu->mmu.memory[address];
     }
     return 0;
 }
