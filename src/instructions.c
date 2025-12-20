@@ -328,11 +328,6 @@ void opcode_2F(Emulator* emu, uint16_t opcode) {
     // Set flags accordingly (not implemented here)
 }
 
-
-
-
-
-
 // JP nn: Jump to address nn
 void opcode_C3(Emulator* emu, uint16_t opcode) {
     uint16_t address = cpu_next_u16(emu);

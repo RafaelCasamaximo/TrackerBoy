@@ -57,6 +57,83 @@ void set_hl(Emulator* emu, uint16_t val) {
     emu->cpu.H = (val >> 8) & 0xFF;
     emu->cpu.L = val & 0xFF;
 }
+void flag_Z_set(Emulator* emu, bool value)
+{
+    if (value) {
+        emu->cpu.F |= 0b10000000; // Set bit 7
+    } else {
+        emu->cpu.F &= ~0b10000000; // Clear bit 7
+    }
+}
+
+void flag_N_set(Emulator* emu, bool value)
+{
+    if (value) {
+        emu->cpu.F |= 0b01000000; // Set bit 6
+    } else {
+        emu->cpu.F &= ~0b01000000; // Clear bit 6
+    }
+}
+
+void flag_H_set(Emulator* emu, bool value)
+{
+    if (value) {
+        emu->cpu.F |= 0b00100000; // Set bit 5
+    } else {
+        emu->cpu.F &= ~0b00100000; // Clear bit 5
+    }
+}
+
+void flag_C_set(Emulator* emu, bool value)
+{
+    if (value) {
+        emu->cpu.F |= 0b00010000; // Set bit 4
+    } else {
+        emu->cpu.F &= ~0b00010000; // Clear bit 4
+    }
+}
+
+void flag_Z_reset(Emulator* emu)
+{
+    emu->cpu.F &= ~0b10000000; // Clear bit 7
+}
+
+void flag_N_reset(Emulator* emu)
+{
+    emu->cpu.F &= ~0b01000000; // Clear bit 6
+}
+
+void flag_H_reset(Emulator* emu)
+{
+    emu->cpu.F &= ~0b00100000; // Clear bit 5
+}
+
+void flag_C_reset(Emulator* emu)
+{
+    emu->cpu.F &= ~0b00010000; // Clear bit 4
+}
+
+bool flag_Z_get(Emulator* emu)
+{
+    return (emu->cpu.F & 0b10000000) != 0;
+}
+
+bool flag_N_get(Emulator* emu)
+{
+    return (emu->cpu.F & 0b01000000) != 0;
+}
+
+bool flag_H_get(Emulator* emu)
+{
+    return (emu->cpu.F & 0b00100000) != 0;
+}
+
+bool flag_C_get(Emulator* emu)
+{
+    return (emu->cpu.F & 0b00010000) != 0;
+}
+
+
 
 uint8_t cpu_read_u8(Emulator* emu, uint16_t address) {
     return mmu_read_byte(emu, address);
