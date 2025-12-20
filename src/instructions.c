@@ -288,10 +288,44 @@ void opcode_28(Emulator* emu, uint16_t opcode) {
     }
 }
 
+void opcode_29(Emulator* emu, uint16_t opcode) {
+    uint16_t hl = get_hl(emu);
+    uint16_t hl_plus_hl = hl + hl;
+    set_hl(emu, hl_plus_hl);
+    // Set flags accordingly (not implemented here)
+}
+
+void opcode_2A(Emulator* emu, uint16_t opcode) {
+    uint16_t address = get_hl(emu);
+    emu->cpu.A = cpu_read_u8(emu, address);
+    set_hl(emu, address + 1);
+}
+
+void opcode_2B(Emulator* emu, uint16_t opcode) {
+    uint16_t hl = get_hl(emu);
+    hl--;
+    set_hl(emu, hl);    
+}
+
+void opcode_2C(Emulator* emu, uint16_t opcode) {
+    emu->cpu.L++;
+    // Set flags accordingly (not implemented here)
+}
+
+void opcode_2D(Emulator* emu, uint16_t opcode) {
+    emu->cpu.L--;
+    // Set flags accordingly (not implemented here)
+}
+
 // LD L, n8: Load 8-bit immediate into L
 void opcode_2E(Emulator* emu, uint16_t opcode) {
     uint8_t value = cpu_next_u8(emu);
     emu->cpu.L = value;
+}
+
+void opcode_2F(Emulator* emu, uint16_t opcode) {
+    emu->cpu.A = ~emu->cpu.A;
+    // Set flags accordingly (not implemented here)
 }
 
 
@@ -326,38 +360,38 @@ InstructionFunc instructions[256] = {
     opcode_0D,    // 0x0D
     opcode_0E,    // 0x0E
     opcode_0F,    // 0x0F
-    op_notImplemented,    // 0x10
-    op_notImplemented,    // 0x11
-    op_notImplemented,    // 0x12
-    op_notImplemented,    // 0x13
-    op_notImplemented,    // 0x14
-    op_notImplemented,    // 0x15
-    op_notImplemented,    // 0x16
-    op_notImplemented,    // 0x17
-    op_notImplemented,    // 0x18
-    op_notImplemented,    // 0x19
-    op_notImplemented,    // 0x1A
-    op_notImplemented,    // 0x1B
-    op_notImplemented,    // 0x1C
-    op_notImplemented,    // 0x1D
-    op_notImplemented,    // 0x1E
-    op_notImplemented,    // 0x1F
-    op_notImplemented,    // 0x20
-    op_notImplemented,    // 0x21
-    op_notImplemented,    // 0x22
-    op_notImplemented,    // 0x23
-    op_notImplemented,    // 0x24
-    op_notImplemented,    // 0x25
-    op_notImplemented,    // 0x26
-    op_notImplemented,    // 0x27
-    op_notImplemented,    // 0x28
-    op_notImplemented,    // 0x29
-    op_notImplemented,    // 0x2A
-    op_notImplemented,    // 0x2B
-    op_notImplemented,    // 0x2C
-    op_notImplemented,    // 0x2D
-    op_notImplemented,    // 0x2E
-    op_notImplemented,    // 0x2F
+    opcode_10,    // 0x10
+    opcode_11,    // 0x11
+    opcode_12,    // 0x12
+    opcode_13,    // 0x13
+    opcode_14,    // 0x14
+    opcode_15,    // 0x15
+    opcode_16,    // 0x16
+    opcode_17,    // 0x17
+    opcode_18,    // 0x18
+    opcode_19,    // 0x19
+    opcode_1A,    // 0x1A
+    opcode_1B,    // 0x1B
+    opcode_1C,    // 0x1C
+    opcode_1D,    // 0x1D
+    opcode_1E,    // 0x1E
+    opcode_1F,    // 0x1F
+    opcode_20,    // 0x20
+    opcode_21,    // 0x21
+    opcode_22,    // 0x22
+    opcode_23,    // 0x23
+    opcode_24,    // 0x24
+    opcode_25,    // 0x25
+    opcode_26,    // 0x26
+    opcode_27,    // 0x27
+    opcode_28,    // 0x28
+    opcode_29,    // 0x29
+    opcode_2A,    // 0x2A
+    opcode_2B,    // 0x2B
+    opcode_2C,    // 0x2C
+    opcode_2D,    // 0x2D
+    opcode_2E,    // 0x2E
+    opcode_2F,    // 0x2F
     op_notImplemented,    // 0x30
     op_notImplemented,    // 0x31
     op_notImplemented,    // 0x32
