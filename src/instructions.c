@@ -1,4 +1,5 @@
 #include <instructions.h>
+#include <cpu.h>
 #include <stdlib.h>
 
 void op_notImplemented(Emulator* emu, uint16_t opcode) {
@@ -13,7 +14,7 @@ void opcode_00(Emulator* emu, uint16_t opcode) {
 
 // LD BC, n16: Load 16-bit immediate into BC
 void opcode_01(Emulator* emu, uint16_t opcode) {
-    uint16_t value = cpu_read_u16(emu, emu->cpu.PC);
+    uint16_t value = cpu_next_u16(emu);
     emu->cpu.B = (value >> 8) & 0xFF;
     emu->cpu.C = value & 0xFF;
 }
@@ -46,7 +47,7 @@ void opcode_05(Emulator* emu, uint16_t opcode) {
 
 // LD B, n8: Load 8-bit immediate into B
 void opcode_06(Emulator* emu, uint16_t opcode) {
-    uint8_t value = cpu_read_next_u8(emu);
+    uint8_t value = cpu_next_u8(emu);
     emu->cpu.B = value;
 }
 
@@ -59,7 +60,7 @@ void opcode_07(Emulator* emu, uint16_t opcode) {
 
 // LD (a16), SP: Store SP at address a16
 void opcode_08(Emulator* emu, uint16_t opcode) {
-    uint16_t address = cpu_read_u16(emu, emu->cpu.PC);
+    uint16_t address = cpu_next_u16(emu);
     mmu_write_byte(emu, address, emu->cpu.SP & 0xFF);         // Low byte
     mmu_write_byte(emu, address + 1, (emu->cpu.SP >> 8) & 0xFF); // High byte
 }
@@ -101,20 +102,206 @@ void opcode_0D(Emulator* emu, uint16_t opcode) {
 
 // LD C, n8: Load 8-bit immediate into C
 void opcode_0E(Emulator* emu, uint16_t opcode) {
-    uint8_t value = cpu_read_next_u8(emu);
+    uint8_t value = cpu_next_u8(emu);
     emu->cpu.C = value;
 }
 
+// RRCA: Rotate A right with carry
 void opcode_0F(Emulator* emu, uint16_t opcode) {
-    // RRCA: Rotate A right with carry
     uint8_t carry = emu->cpu.A & 0x01;
     emu->cpu.A = (emu->cpu.A >> 1) | (carry << 7);
     // Set flags accordingly (not implemented here)
 }
 
+// STOP: Stop the CPU until a button is pressed
+void opcode_10(Emulator* emu, uint16_t opcode) {
+    // Implementation depends on the emulator's architecture
+}
+
+// LD DE, n16: Load 16-bit immediate into DE
+void opcode_11(Emulator* emu, uint16_t opcode) {
+    uint16_t value = cpu_next_u16(emu);
+    emu->cpu.D = (value >> 8) & 0xFF;
+    emu->cpu.E = value & 0xFF;
+}
+
+// LD (DE), A: Store A into address pointed by DE
+void opcode_12(Emulator* emu, uint16_t opcode) {
+    uint16_t address = ((uint16_t)emu->cpu.D << 8) | emu->cpu.E;
+    mmu_write_byte(emu, address, emu->cpu.A);
+}
+
+// INC DE: Increment DE register pair
+void opcode_13(Emulator* emu, uint16_t opcode) {
+    uint16_t de = ((uint16_t)emu->cpu.D << 8) | emu->cpu.E;
+    de++;
+    emu->cpu.D = (de >> 8) & 0xFF;
+    emu->cpu.E = de & 0xFF;
+}
+
+// INC D: Increment register D
+void opcode_14(Emulator* emu, uint16_t opcode) {
+    emu->cpu.D++;
+    // Set flags accordingly (not implemented here)
+}
+
+// DEC D: Decrement register D
+void opcode_15(Emulator* emu, uint16_t opcode) {
+    emu->cpu.D--;
+    // Set flags accordingly (not implemented here)
+}
+
+// LD D, n8: Load 8-bit immediate into D
+void opcode_16(Emulator* emu, uint16_t opcode) {
+    uint8_t value = cpu_next_u8(emu);
+    emu->cpu.D = value;
+}
+
+// RLA: Rotate A left through carry
+void opcode_17(Emulator* emu, uint16_t opcode) {
+    uint8_t carry_in = (emu->cpu.F & 0x10) ? 1 : 0; // Assuming bit 4 of F is Carry flag
+    uint8_t carry_out = (emu->cpu.A & 0x80) >> 7;
+    emu->cpu.A = (emu->cpu.A << 1) | carry_in;
+    // Update flags
+    emu->cpu.F &= 0xEF; // Clear Carry flag
+    if (carry_out) {
+        emu->cpu.F |= 0x10; // Set Carry flag
+    }
+}
+
+// JR r8: Jump relative by signed immediate
+void opcode_18(Emulator* emu, uint16_t opcode) {
+    int8_t offset = (int8_t)cpu_next_u8(emu);
+    emu->cpu.PC += offset;
+}
+
+// ADD HL, DE: Add DE to HL
+void opcode_19(Emulator* emu, uint16_t opcode) {
+    uint16_t hl = get_hl(emu);
+    uint16_t de = ((uint16_t)emu->cpu.D << 8) | emu->cpu.E;
+    hl += de;
+    set_hl(emu, hl);
+    // Set flags accordingly (not implemented here)
+}
+
+// LD A, (DE): Load value at address DE into A
+void opcode_1A(Emulator* emu, uint16_t opcode) {
+    uint16_t address = ((uint16_t)emu->cpu.D << 8) | emu->cpu.E;
+    emu->cpu.A = cpu_read_u8(emu, address);
+}
+
+// DEC DE: Decrement DE register pair
+void opcode_1B(Emulator* emu, uint16_t opcode) {
+    uint16_t de = ((uint16_t)emu->cpu.D << 8) | emu->cpu.E;
+    de--;
+    emu->cpu.D = (de >> 8) & 0xFF;
+    emu->cpu.E = de & 0xFF;
+}
+
+// INC E: Increment register E
+void opcode_1C(Emulator* emu, uint16_t opcode) {
+    emu->cpu.E++;
+    // Set flags accordingly (not implemented here)
+}
+
+// DEC E: Decrement register E
+void opcode_1D(Emulator* emu, uint16_t opcode) {
+    emu->cpu.E--;
+    // Set flags accordingly (not implemented here)
+}
+
+// LD E, n8: Load 8-bit immediate into E
+void opcode_1E(Emulator* emu, uint16_t opcode) {
+    uint8_t value = cpu_next_u8(emu);
+    emu->cpu.E = value;
+}
+
+// RRA: Rotate A right through carry
+void opcode_1F(Emulator* emu, uint16_t opcode) {
+    uint8_t carry_in = (emu->cpu.F & 0x10) ? 0x80 : 0; // Assuming bit 4 of F is Carry flag
+    uint8_t carry_out = emu->cpu.A & 0x01;
+    emu->cpu.A = (emu->cpu.A >> 1) | carry_in;
+    // Update flags
+    emu->cpu.F &= 0xEF; // Clear Carry flag
+    if (carry_out) {
+        emu->cpu.F |= 0x10; // Set Carry flag
+    }
+}
+
+// JR NZ, r8: Jump relative by signed immediate if Z flag is not set
+void opcode_20(Emulator* emu, uint16_t opcode) {
+    int8_t offset = (int8_t)cpu_next_u8(emu);
+    if ((emu->cpu.F & 0x80) == 0) { // Assuming bit 7 of F is Zero flag
+        emu->cpu.PC += offset;
+    }
+}
+
+// LD HL, n16: Load 16-bit immediate into HL
+void opcode_21(Emulator* emu, uint16_t opcode) {
+    uint16_t value = cpu_next_u16(emu);
+    emu->cpu.H = (value >> 8) & 0xFF;
+    emu->cpu.L = value & 0xFF;
+}
+
+// LD (HL+), A: Store A into address pointed by HL, then increment HL
+void opcode_22(Emulator* emu, uint16_t opcode) {
+    uint16_t address = get_hl(emu);
+    mmu_write_byte(emu, address, emu->cpu.A);
+    set_hl(emu, address + 1);
+}
+
+// INC HL: Increment HL register pair
+void opcode_23(Emulator* emu, uint16_t opcode) {
+    uint16_t hl = get_hl(emu);
+    hl++;
+    set_hl(emu, hl);    
+}
+
+// INC H: Increment register H
+void opcode_24(Emulator* emu, uint16_t opcode) {
+    emu->cpu.H++;
+    // Set flags accordingly (not implemented here)
+}
+
+// DEC H: Decrement register H
+void opcode_25(Emulator* emu, uint16_t opcode) {
+    emu->cpu.H--;
+    // Set flags accordingly (not implemented here)
+}   
+
+// LD H, n8: Load 8-bit immediate into H
+void opcode_26(Emulator* emu, uint16_t opcode) {
+    uint8_t value = cpu_next_u8(emu);
+    emu->cpu.H = value;
+}
+
+// DAA: Decimal Adjust Accumulator
+void opcode_27(Emulator* emu, uint16_t opcode) {
+    // Implementation of DAA instruction (not implemented here)
+}
+
+// JR Z, r8: Jump relative by signed immediate if Z flag is set
+void opcode_28(Emulator* emu, uint16_t opcode) {
+    int8_t offset = (int8_t)cpu_next_u8(emu);
+    if (emu->cpu.F & 0x80) { // Assuming bit 7 of F is Zero flag
+        emu->cpu.PC += offset;
+    }
+}
+
+// LD L, n8: Load 8-bit immediate into L
+void opcode_2E(Emulator* emu, uint16_t opcode) {
+    uint8_t value = cpu_next_u8(emu);
+    emu->cpu.L = value;
+}
+
+
+
+
+
+
+// JP nn: Jump to address nn
 void opcode_C3(Emulator* emu, uint16_t opcode) {
-    // JP nn: Jump to address nn
-    uint16_t address = cpu_read_u16(emu, emu->cpu.PC);
+    uint16_t address = cpu_next_u16(emu);
     emu->cpu.PC = address;
 }
 

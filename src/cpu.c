@@ -62,12 +62,6 @@ uint8_t cpu_read_u8(Emulator* emu, uint16_t address) {
     return mmu_read_byte(emu, address);
 }
 
-uint8_t cpu_read_next_u8(Emulator* emu) {
-    uint8_t value = cpu_read_u8(emu, emu->cpu.PC);
-    emu->cpu.PC++;
-    return value;
-}
-
 uint16_t cpu_read_u16(Emulator* emu, uint16_t address) {
     // Little endian: low byte first, then high byte
     uint8_t low = cpu_read_u8(emu, address);
@@ -75,9 +69,22 @@ uint16_t cpu_read_u16(Emulator* emu, uint16_t address) {
     return ((uint16_t)high << 8) | low;
 }
 
+uint8_t cpu_next_u8(Emulator* emu) {
+    uint8_t value = cpu_read_u8(emu, emu->cpu.PC);
+    emu->cpu.PC++;
+    return value;
+}
+
+uint16_t cpu_next_u16(Emulator* emu) {
+    // Little endian: low byte first, then high byte
+    uint8_t low = cpu_next_u8(emu);
+    uint8_t high = cpu_next_u8(emu);
+    return ((uint16_t)high << 8) | low;
+}
+
 void cpu_step(Emulator* emu) {
     // Fetch the next opcode
-    uint8_t opcode = cpu_read_next_u8(emu);
+    uint8_t opcode = cpu_next_u8(emu);
     // Execute the instruction
     instructions[opcode](emu, opcode);
 }

@@ -44,5 +44,7 @@ void initialize_cpu(Emulator* emu);
 
 uint8_t cpu_read_u8(Emulator* emu, uint16_t address);
 uint16_t cpu_read_u16(Emulator* emu, uint16_t address);
+uint8_t cpu_next_u8(Emulator* emu);
+uint16_t cpu_next_u16(Emulator* emu);
 
 void cpu_step(Emulator* emu);
