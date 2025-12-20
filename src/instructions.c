@@ -1,9 +1,11 @@
-#include "instructions.h"
+#include <instructions.h>
+#include <prefix_instructions.h>
 #include <cpu.h>
 #include <mmu.h>
 #include <emulator.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <log.h>
 
 // --- HELPERS INTERNOS (Para encapsular lógica de Flags) ---
 
@@ -185,6 +187,7 @@ void op_notImplemented(Emulator* emu, uint16_t opcode) {
 
 // 0x00: NOP
 void opcode_00(Emulator* emu, uint16_t opcode) {
+    log_info("NOP executed");
     (void)emu; (void)opcode; // Evita warnings de unused parameter
 }
 
@@ -192,31 +195,37 @@ void opcode_00(Emulator* emu, uint16_t opcode) {
 void opcode_01(Emulator* emu, uint16_t opcode) {
     uint16_t value = cpu_next_u16(emu);
     set_bc(emu, value);
+    log_info("LD BC, 0x%04X", value);
 }
 
 // 0x02: LD (BC), A
 void opcode_02(Emulator* emu, uint16_t opcode) {
     mmu_write_byte(emu, get_bc(emu), emu->cpu.A);
+    log_info("LD (BC), A (0x%02X)", emu->cpu.A);
 }
 
 // 0x03: INC BC (16-bit não afeta flags)
 void opcode_03(Emulator* emu, uint16_t opcode) {
     set_bc(emu, get_bc(emu) + 1);
+    log_info("INC BC to 0x%04X", get_bc(emu));
 }
 
 // 0x04: INC B
 void opcode_04(Emulator* emu, uint16_t opcode) {
     emu->cpu.B = inc_n8(emu, emu->cpu.B);
+    log_info("INC B to 0x%02X", emu->cpu.B);
 }
 
 // 0x05: DEC B
 void opcode_05(Emulator* emu, uint16_t opcode) {
     emu->cpu.B = dec_n8(emu, emu->cpu.B);
+    log_info("DEC B to 0x%02X", emu->cpu.B);
 }
 
 // 0x06: LD B, n8
 void opcode_06(Emulator* emu, uint16_t opcode) {
     emu->cpu.B = cpu_next_u8(emu);
+    log_info("LD B, 0x%02X", emu->cpu.B);
 }
 
 // 0x07: RLCA (Rotate Left A). Bit 7 -> Carry e Bit 0. ZERA Z.
@@ -228,6 +237,7 @@ void opcode_07(Emulator* emu, uint16_t opcode) {
     flag_N_set(emu, false);
     flag_H_set(emu, false);
     flag_C_set(emu, old_bit7);
+    log_info("RLCA executed, A=0x%02X", emu->cpu.A);
 }
 
 // 0x08: LD (a16), SP
@@ -236,36 +246,43 @@ void opcode_08(Emulator* emu, uint16_t opcode) {
     // Grava Little Endian manualmente para clareza
     mmu_write_byte(emu, addr, emu->cpu.SP & 0xFF);
     mmu_write_byte(emu, addr + 1, (emu->cpu.SP >> 8) & 0xFF);
+    log_info("LD (0x%04X), SP (0x%04X)", addr, emu->cpu.SP);
 }
 
 // 0x09: ADD HL, BC
 void opcode_09(Emulator* emu, uint16_t opcode) {
     add_hl_n16(emu, get_bc(emu));
+    log_info("ADD HL, BC; HL=0x%04X", get_hl(emu));
 }
 
 // 0x0A: LD A, (BC)
 void opcode_0A(Emulator* emu, uint16_t opcode) {
     emu->cpu.A = mmu_read_byte(emu, get_bc(emu));
+    log_info("LD A, (BC) => A=0x%02X", emu->cpu.A);
 }
 
 // 0x0B: DEC BC
 void opcode_0B(Emulator* emu, uint16_t opcode) {
     set_bc(emu, get_bc(emu) - 1);
+    log_info("DEC BC to 0x%04X", get_bc(emu));
 }
 
 // 0x0C: INC C
 void opcode_0C(Emulator* emu, uint16_t opcode) {
     emu->cpu.C = inc_n8(emu, emu->cpu.C);
+    log_info("INC C to 0x%02X", emu->cpu.C);
 }
 
 // 0x0D: DEC C
 void opcode_0D(Emulator* emu, uint16_t opcode) {
     emu->cpu.C = dec_n8(emu, emu->cpu.C);
+    log_info("DEC C to 0x%02X", emu->cpu.C);
 }
 
 // 0x0E: LD C, n8
 void opcode_0E(Emulator* emu, uint16_t opcode) {
     emu->cpu.C = cpu_next_u8(emu);
+    log_info("LD C, 0x%02X", emu->cpu.C);
 }
 
 // 0x0F: RRCA (Rotate Right A). Bit 0 -> Carry e Bit 7. ZERA Z.
@@ -277,11 +294,13 @@ void opcode_0F(Emulator* emu, uint16_t opcode) {
     flag_N_set(emu, false);
     flag_H_set(emu, false);
     flag_C_set(emu, old_bit0);
+    log_info("RRCA executed, A=0x%02X", emu->cpu.A);
 }
 
 // 0x10: STOP
 void opcode_10(Emulator* emu, uint16_t opcode) {
     cpu_next_u8(emu); // Consome o byte extra
+    log_info("STOP executed");
     // TODO: Implementar pausa ou speed switch (GBC)
 }
 
@@ -289,31 +308,37 @@ void opcode_10(Emulator* emu, uint16_t opcode) {
 void opcode_11(Emulator* emu, uint16_t opcode) {
     uint16_t val = cpu_next_u16(emu);
     set_de(emu, val);
+    log_info("LD DE, 0x%04X", val);
 }
 
 // 0x12: LD (DE), A
 void opcode_12(Emulator* emu, uint16_t opcode) {
     mmu_write_byte(emu, get_de(emu), emu->cpu.A);
+    log_info("LD (DE), A (0x%02X)", emu->cpu.A);
 }
 
 // 0x13: INC DE
 void opcode_13(Emulator* emu, uint16_t opcode) {
     set_de(emu, get_de(emu) + 1);
+    log_info("INC DE to 0x%04X", get_de(emu));
 }
 
 // 0x14: INC D
 void opcode_14(Emulator* emu, uint16_t opcode) {
     emu->cpu.D = inc_n8(emu, emu->cpu.D);
+    log_info("INC D to 0x%02X", emu->cpu.D);
 }
 
 // 0x15: DEC D
 void opcode_15(Emulator* emu, uint16_t opcode) {
     emu->cpu.D = dec_n8(emu, emu->cpu.D);
+    log_info("DEC D to 0x%02X", emu->cpu.D);
 }
 
 // 0x16: LD D, n8
 void opcode_16(Emulator* emu, uint16_t opcode) {
     emu->cpu.D = cpu_next_u8(emu);
+    log_info("LD D, 0x%02X", emu->cpu.D);
 }
 
 // 0x17: RLA (Rotate Left Through Carry). Carry -> Bit 0, Bit 7 -> Carry.
@@ -327,42 +352,50 @@ void opcode_17(Emulator* emu, uint16_t opcode) {
     flag_N_set(emu, false);
     flag_H_set(emu, false);
     flag_C_set(emu, old_bit7);
+    log_info("RLA executed, A=0x%02X", emu->cpu.A);
 }
 
 // 0x18: JR n8 (Jump Relative)
 void opcode_18(Emulator* emu, uint16_t opcode) {
     int8_t offset = (int8_t)cpu_next_u8(emu);
     emu->cpu.PC += offset;
+    log_info("JR executed to PC=0x%04X", emu->cpu.PC);
 }
 
 // 0x19: ADD HL, DE
 void opcode_19(Emulator* emu, uint16_t opcode) {
     add_hl_n16(emu, get_de(emu));
+    log_info("ADD HL, DE; HL=0x%04X", get_hl(emu));
 }
 
 // 0x1A: LD A, (DE)
 void opcode_1A(Emulator* emu, uint16_t opcode) {
     emu->cpu.A = mmu_read_byte(emu, get_de(emu));
+    log_info("LD A, (DE) => A=0x%02X", emu->cpu.A);
 }
 
 // 0x1B: DEC DE
 void opcode_1B(Emulator* emu, uint16_t opcode) {
     set_de(emu, get_de(emu) - 1);
+    log_info("DEC DE to 0x%04X", get_de(emu));
 }
 
 // 0x1C: INC E
 void opcode_1C(Emulator* emu, uint16_t opcode) {
     emu->cpu.E = inc_n8(emu, emu->cpu.E);
+    log_info("INC E to 0x%02X", emu->cpu.E);
 }
 
 // 0x1D: DEC E
 void opcode_1D(Emulator* emu, uint16_t opcode) {
     emu->cpu.E = dec_n8(emu, emu->cpu.E);
+    log_info("DEC E to 0x%02X", emu->cpu.E);
 }
 
 // 0x1E: LD E, n8
 void opcode_1E(Emulator* emu, uint16_t opcode) {
     emu->cpu.E = cpu_next_u8(emu);
+    log_info("LD E, 0x%02X", emu->cpu.E);
 }
 
 // 0x1F: RRA (Rotate Right Through Carry)
@@ -376,13 +409,16 @@ void opcode_1F(Emulator* emu, uint16_t opcode) {
     flag_N_set(emu, false);
     flag_H_set(emu, false);
     flag_C_set(emu, old_bit0);
+    log_info("RRA executed, A=0x%02X", emu->cpu.A);
 }
-
 // 0x20: JR NZ, n8
 void opcode_20(Emulator* emu, uint16_t opcode) {
     int8_t offset = (int8_t)cpu_next_u8(emu);
     if (!flag_Z_get(emu)) {
         emu->cpu.PC += offset;
+        log_info("JR NZ taken to PC=0x%04X", emu->cpu.PC);
+    } else {
+        log_info("JR NZ not taken");
     }
 }
 
@@ -390,6 +426,7 @@ void opcode_20(Emulator* emu, uint16_t opcode) {
 void opcode_21(Emulator* emu, uint16_t opcode) {
     uint16_t val = cpu_next_u16(emu);
     set_hl(emu, val);
+    log_info("LD HL, 0x%04X", val);
 }
 
 // 0x22: LD (HL+), A
@@ -397,26 +434,31 @@ void opcode_22(Emulator* emu, uint16_t opcode) {
     uint16_t hl = get_hl(emu);
     mmu_write_byte(emu, hl, emu->cpu.A);
     set_hl(emu, hl + 1);
+    log_info("LD (HL+), A (A=0x%02X, HL=0x%04X->0x%04X)", emu->cpu.A, hl, hl + 1);
 }
 
 // 0x23: INC HL
 void opcode_23(Emulator* emu, uint16_t opcode) {
     set_hl(emu, get_hl(emu) + 1);
+    log_info("INC HL to 0x%04X", get_hl(emu));
 }
 
 // 0x24: INC H
 void opcode_24(Emulator* emu, uint16_t opcode) {
     emu->cpu.H = inc_n8(emu, emu->cpu.H);
+    log_info("INC H to 0x%02X", emu->cpu.H);
 }
 
 // 0x25: DEC H
 void opcode_25(Emulator* emu, uint16_t opcode) {
     emu->cpu.H = dec_n8(emu, emu->cpu.H);
+    log_info("DEC H to 0x%02X", emu->cpu.H);
 }
 
 // 0x26: LD H, n8
 void opcode_26(Emulator* emu, uint16_t opcode) {
     emu->cpu.H = cpu_next_u8(emu);
+    log_info("LD H, 0x%02X", emu->cpu.H);
 }
 
 // 0x27: DAA (Decimal Adjust Accumulator) - Essencial para contagem BCD
@@ -431,10 +473,11 @@ void opcode_27(Emulator* emu, uint16_t opcode) {
     }
     
     flag_H_set(emu, false);
-    flag_C_set(emu, (a & 0x100) != 0 || flag_C_get(emu)); // Carry persiste se já estava setado? (verificar specs, mas geralmente é OR)
+    flag_C_set(emu, (a & 0x100) != 0 || flag_C_get(emu));
     a &= 0xFF;
     flag_Z_set(emu, a == 0);
     emu->cpu.A = (uint8_t)a;
+    log_info("DAA executed, A=0x%02X", emu->cpu.A);
 }
 
 // 0x28: JR Z, n8
@@ -442,12 +485,16 @@ void opcode_28(Emulator* emu, uint16_t opcode) {
     int8_t offset = (int8_t)cpu_next_u8(emu);
     if (flag_Z_get(emu)) {
         emu->cpu.PC += offset;
+        log_info("JR Z taken to PC=0x%04X", emu->cpu.PC);
+    } else {
+        log_info("JR Z not taken");
     }
 }
 
 // 0x29: ADD HL, HL
 void opcode_29(Emulator* emu, uint16_t opcode) {
     add_hl_n16(emu, get_hl(emu));
+    log_info("ADD HL, HL; HL=0x%04X", get_hl(emu));
 }
 
 // 0x2A: LD A, (HL+)
@@ -455,26 +502,31 @@ void opcode_2A(Emulator* emu, uint16_t opcode) {
     uint16_t hl = get_hl(emu);
     emu->cpu.A = mmu_read_byte(emu, hl);
     set_hl(emu, hl + 1);
+    log_info("LD A, (HL+) => A=0x%02X, HL=0x%04X->0x%04X", emu->cpu.A, hl, hl + 1);
 }
 
 // 0x2B: DEC HL
 void opcode_2B(Emulator* emu, uint16_t opcode) {
     set_hl(emu, get_hl(emu) - 1);
+    log_info("DEC HL to 0x%04X", get_hl(emu));
 }
 
 // 0x2C: INC L
 void opcode_2C(Emulator* emu, uint16_t opcode) {
     emu->cpu.L = inc_n8(emu, emu->cpu.L);
+    log_info("INC L to 0x%02X", emu->cpu.L);
 }
 
 // 0x2D: DEC L
 void opcode_2D(Emulator* emu, uint16_t opcode) {
     emu->cpu.L = dec_n8(emu, emu->cpu.L);
+    log_info("DEC L to 0x%02X", emu->cpu.L);
 }
 
 // 0x2E: LD L, n8
 void opcode_2E(Emulator* emu, uint16_t opcode) {
     emu->cpu.L = cpu_next_u8(emu);
+    log_info("LD L, 0x%02X", emu->cpu.L);
 }
 
 // 0x2F: CPL (Inverte bits de A)
@@ -482,20 +534,24 @@ void opcode_2F(Emulator* emu, uint16_t opcode) {
     emu->cpu.A = ~emu->cpu.A;
     flag_N_set(emu, true);
     flag_H_set(emu, true);
+    log_info("CPL executed, A=0x%02X", emu->cpu.A);
 }
-
 
 // 0x30: JR NC, n8 (Jump Relative if Not Carry)
 void opcode_30(Emulator* emu, uint16_t opcode) {
     int8_t offset = (int8_t)cpu_next_u8(emu);
     if (!flag_C_get(emu)) {
         emu->cpu.PC += offset;
+        log_info("JR NC taken to PC=0x%04X", emu->cpu.PC);
+    } else {
+        log_info("JR NC not taken");
     }
 }
 
 // 0x31: LD SP, n16 (Inicializa o Stack Pointer)
 void opcode_31(Emulator* emu, uint16_t opcode) {
     emu->cpu.SP = cpu_next_u16(emu);
+    log_info("LD SP, 0x%04X", emu->cpu.SP);
 }
 
 // 0x32: LD (HL-), A (Escreve A em (HL) e decrementa HL)
@@ -503,11 +559,13 @@ void opcode_32(Emulator* emu, uint16_t opcode) {
     uint16_t hl = get_hl(emu);
     mmu_write_byte(emu, hl, emu->cpu.A);
     set_hl(emu, hl - 1);
+    log_info("LD (HL-), A (A=0x%02X, HL=0x%04X->0x%04X)", emu->cpu.A, hl, hl - 1);
 }
 
 // 0x33: INC SP (16-bit, sem flags)
 void opcode_33(Emulator* emu, uint16_t opcode) {
     emu->cpu.SP++;
+    log_info("INC SP to 0x%04X", emu->cpu.SP);
 }
 
 // 0x34: INC (HL) - Incrementa valor NA MEMÓRIA
@@ -517,6 +575,7 @@ void opcode_34(Emulator* emu, uint16_t opcode) {
     uint8_t val = mmu_read_byte(emu, hl);
     val = inc_n8(emu, val); // Usa seu helper existente para flags (Z, N, H)
     mmu_write_byte(emu, hl, val);
+    log_info("INC (HL) at 0x%04X to 0x%02X", hl, val);
 }
 
 // 0x35: DEC (HL) - Decrementa valor NA MEMÓRIA
@@ -525,6 +584,7 @@ void opcode_35(Emulator* emu, uint16_t opcode) {
     uint8_t val = mmu_read_byte(emu, hl);
     val = dec_n8(emu, val); // Usa seu helper existente
     mmu_write_byte(emu, hl, val);
+    log_info("DEC (HL) at 0x%04X to 0x%02X", hl, val);
 }
 
 // 0x36: LD (HL), n8 (Carrega imediato para memória)
@@ -532,6 +592,7 @@ void opcode_36(Emulator* emu, uint16_t opcode) {
     uint16_t hl = get_hl(emu);
     uint8_t val = cpu_next_u8(emu);
     mmu_write_byte(emu, hl, val);
+    log_info("LD (HL), 0x%02X at 0x%04X", val, hl);
 }
 
 // 0x37: SCF (Set Carry Flag)
@@ -540,6 +601,7 @@ void opcode_37(Emulator* emu, uint16_t opcode) {
     flag_H_set(emu, false);
     flag_C_set(emu, true);
     // Z é preservado
+    log_info("SCF executed");
 }
 
 // 0x38: JR C, n8 (Jump Relative if Carry)
@@ -547,12 +609,16 @@ void opcode_38(Emulator* emu, uint16_t opcode) {
     int8_t offset = (int8_t)cpu_next_u8(emu);
     if (flag_C_get(emu)) {
         emu->cpu.PC += offset;
+        log_info("JR C taken to PC=0x%04X", emu->cpu.PC);
+    } else {
+        log_info("JR C not taken");
     }
 }
 
 // 0x39: ADD HL, SP (Adiciona SP ao HL, 16-bit)
 void opcode_39(Emulator* emu, uint16_t opcode) {
     add_hl_n16(emu, emu->cpu.SP); // Usa seu helper existente
+    log_info("ADD HL, SP; HL=0x%04X", get_hl(emu));
 }
 
 // 0x3A: LD A, (HL-) (Lê de (HL) para A e decrementa HL)
@@ -560,26 +626,31 @@ void opcode_3A(Emulator* emu, uint16_t opcode) {
     uint16_t hl = get_hl(emu);
     emu->cpu.A = mmu_read_byte(emu, hl);
     set_hl(emu, hl - 1);
+    log_info("LD A, (HL-) => A=0x%02X, HL=0x%04X->0x%04X", emu->cpu.A, hl, hl - 1);
 }
 
 // 0x3B: DEC SP (16-bit, sem flags)
 void opcode_3B(Emulator* emu, uint16_t opcode) {
     emu->cpu.SP--;
+    log_info("DEC SP to 0x%04X", emu->cpu.SP);
 }
 
 // 0x3C: INC A
 void opcode_3C(Emulator* emu, uint16_t opcode) {
     emu->cpu.A = inc_n8(emu, emu->cpu.A);
+    log_info("INC A to 0x%02X", emu->cpu.A);
 }
 
 // 0x3D: DEC A
 void opcode_3D(Emulator* emu, uint16_t opcode) {
     emu->cpu.A = dec_n8(emu, emu->cpu.A);
+    log_info("DEC A to 0x%02X", emu->cpu.A);
 }
 
 // 0x3E: LD A, n8
 void opcode_3E(Emulator* emu, uint16_t opcode) {
     emu->cpu.A = cpu_next_u8(emu);
+    log_info("LD A, 0x%02X", emu->cpu.A);
 }
 
 // 0x3F: CCF (Complement Carry Flag - Inverte C)
@@ -588,6 +659,7 @@ void opcode_3F(Emulator* emu, uint16_t opcode) {
     flag_H_set(emu, false);
     flag_C_set(emu, !flag_C_get(emu)); // Inverte
     // Z é preservado
+    log_info("CCF executed");
 }
 
 // --- BLOCO 0x40 - 0x4F: Loads para B e C ---
@@ -595,81 +667,97 @@ void opcode_3F(Emulator* emu, uint16_t opcode) {
 // 0x40: LD B, B (Nop efetivo)
 void opcode_40(Emulator* emu, uint16_t opcode) {
     emu->cpu.B = emu->cpu.B;
+    log_info("LD B, B");
 }
 
 // 0x41: LD B, C
 void opcode_41(Emulator* emu, uint16_t opcode) {
     emu->cpu.B = emu->cpu.C;
+    log_info("LD B, C");
 }
 
 // 0x42: LD B, D
 void opcode_42(Emulator* emu, uint16_t opcode) {
     emu->cpu.B = emu->cpu.D;
+    log_info("LD B, D");
 }
 
 // 0x43: LD B, E
 void opcode_43(Emulator* emu, uint16_t opcode) {
     emu->cpu.B = emu->cpu.E;
+    log_info("LD B, E");
 }
 
 // 0x44: LD B, H
 void opcode_44(Emulator* emu, uint16_t opcode) {
     emu->cpu.B = emu->cpu.H;
+    log_info("LD B, H");
 }
 
 // 0x45: LD B, L
 void opcode_45(Emulator* emu, uint16_t opcode) {
     emu->cpu.B = emu->cpu.L;
+    log_info("LD B, L");
 }
 
 // 0x46: LD B, (HL) - Lê da memória
 void opcode_46(Emulator* emu, uint16_t opcode) {
     emu->cpu.B = mmu_read_byte(emu, get_hl(emu));
+    log_info("LD B, (HL) => 0x%02X", emu->cpu.B);
 }
 
 // 0x47: LD B, A
 void opcode_47(Emulator* emu, uint16_t opcode) {
     emu->cpu.B = emu->cpu.A;
+    log_info("LD B, A");
 }
 
 // 0x48: LD C, B
 void opcode_48(Emulator* emu, uint16_t opcode) {
     emu->cpu.C = emu->cpu.B;
+    log_info("LD C, B");
 }
 
 // 0x49: LD C, C (Nop efetivo)
 void opcode_49(Emulator* emu, uint16_t opcode) {
     emu->cpu.C = emu->cpu.C;
+    log_info("LD C, C");
 }
 
 // 0x4A: LD C, D
 void opcode_4A(Emulator* emu, uint16_t opcode) {
     emu->cpu.C = emu->cpu.D;
+    log_info("LD C, D");
 }
 
 // 0x4B: LD C, E
 void opcode_4B(Emulator* emu, uint16_t opcode) {
     emu->cpu.C = emu->cpu.E;
+    log_info("LD C, E");
 }
 
 // 0x4C: LD C, H
 void opcode_4C(Emulator* emu, uint16_t opcode) {
     emu->cpu.C = emu->cpu.H;
+    log_info("LD C, H");
 }
 
 // 0x4D: LD C, L
 void opcode_4D(Emulator* emu, uint16_t opcode) {
     emu->cpu.C = emu->cpu.L;
+    log_info("LD C, L");
 }
 
 // 0x4E: LD C, (HL) - Lê da memória
 void opcode_4E(Emulator* emu, uint16_t opcode) {
     emu->cpu.C = mmu_read_byte(emu, get_hl(emu));
+    log_info("LD C, (HL) => 0x%02X", emu->cpu.C);
 }
 
 // 0x4F: LD C, A
 void opcode_4F(Emulator* emu, uint16_t opcode) {
     emu->cpu.C = emu->cpu.A;
+    log_info("LD C, A");
 }
 
 // --- BLOCO 0x50 - 0x5F: Loads para D e E ---
@@ -677,81 +765,97 @@ void opcode_4F(Emulator* emu, uint16_t opcode) {
 // 0x50: LD D, B
 void opcode_50(Emulator* emu, uint16_t opcode) {
     emu->cpu.D = emu->cpu.B;
+    log_info("LD D, B");
 }
 
 // 0x51: LD D, C
 void opcode_51(Emulator* emu, uint16_t opcode) {
     emu->cpu.D = emu->cpu.C;
+    log_info("LD D, C");
 }
 
 // 0x52: LD D, D (Nop efetivo)
 void opcode_52(Emulator* emu, uint16_t opcode) {
     emu->cpu.D = emu->cpu.D;
+    log_info("LD D, D");
 }
 
 // 0x53: LD D, E
 void opcode_53(Emulator* emu, uint16_t opcode) {
     emu->cpu.D = emu->cpu.E;
+    log_info("LD D, E");
 }
 
 // 0x54: LD D, H
 void opcode_54(Emulator* emu, uint16_t opcode) {
     emu->cpu.D = emu->cpu.H;
+    log_info("LD D, H");
 }
 
 // 0x55: LD D, L
 void opcode_55(Emulator* emu, uint16_t opcode) {
     emu->cpu.D = emu->cpu.L;
+    log_info("LD D, L");
 }
 
 // 0x56: LD D, (HL) - Lê da memória
 void opcode_56(Emulator* emu, uint16_t opcode) {
     emu->cpu.D = mmu_read_byte(emu, get_hl(emu));
+    log_info("LD D, (HL) => 0x%02X", emu->cpu.D);
 }
 
 // 0x57: LD D, A
 void opcode_57(Emulator* emu, uint16_t opcode) {
     emu->cpu.D = emu->cpu.A;
+    log_info("LD D, A");
 }
 
 // 0x58: LD E, B
 void opcode_58(Emulator* emu, uint16_t opcode) {
     emu->cpu.E = emu->cpu.B;
+    log_info("LD E, B");
 }
 
 // 0x59: LD E, C
 void opcode_59(Emulator* emu, uint16_t opcode) {
     emu->cpu.E = emu->cpu.C;
+    log_info("LD E, C");
 }
 
 // 0x5A: LD E, D
 void opcode_5A(Emulator* emu, uint16_t opcode) {
     emu->cpu.E = emu->cpu.D;
+    log_info("LD E, D");
 }
 
 // 0x5B: LD E, E (Nop efetivo)
 void opcode_5B(Emulator* emu, uint16_t opcode) {
     emu->cpu.E = emu->cpu.E;
+    log_info("LD E, E");
 }
 
 // 0x5C: LD E, H
 void opcode_5C(Emulator* emu, uint16_t opcode) {
     emu->cpu.E = emu->cpu.H;
+    log_info("LD E, H");
 }
 
 // 0x5D: LD E, L
 void opcode_5D(Emulator* emu, uint16_t opcode) {
     emu->cpu.E = emu->cpu.L;
+    log_info("LD E, L");
 }
 
 // 0x5E: LD E, (HL) - Lê da memória
 void opcode_5E(Emulator* emu, uint16_t opcode) {
     emu->cpu.E = mmu_read_byte(emu, get_hl(emu));
+    log_info("LD E, (HL) => 0x%02X", emu->cpu.E);
 }
 
 // 0x5F: LD E, A
 void opcode_5F(Emulator* emu, uint16_t opcode) {
     emu->cpu.E = emu->cpu.A;
+    log_info("LD E, A");
 }
 
 // --- BLOCO 0x60 - 0x6F: Loads para H e L ---
@@ -759,81 +863,97 @@ void opcode_5F(Emulator* emu, uint16_t opcode) {
 // 0x60: LD H, B
 void opcode_60(Emulator* emu, uint16_t opcode) {
     emu->cpu.H = emu->cpu.B;
+    log_info("LD H, B");
 }
 
 // 0x61: LD H, C
 void opcode_61(Emulator* emu, uint16_t opcode) {
     emu->cpu.H = emu->cpu.C;
+    log_info("LD H, C");
 }
 
 // 0x62: LD H, D
 void opcode_62(Emulator* emu, uint16_t opcode) {
     emu->cpu.H = emu->cpu.D;
+    log_info("LD H, D");
 }
 
 // 0x63: LD H, E
 void opcode_63(Emulator* emu, uint16_t opcode) {
     emu->cpu.H = emu->cpu.E;
+    log_info("LD H, E");
 }
 
 // 0x64: LD H, H (Nop efetivo)
 void opcode_64(Emulator* emu, uint16_t opcode) {
     emu->cpu.H = emu->cpu.H;
+    log_info("LD H, H");
 }
 
 // 0x65: LD H, L
 void opcode_65(Emulator* emu, uint16_t opcode) {
     emu->cpu.H = emu->cpu.L;
+    log_info("LD H, L");
 }
 
 // 0x66: LD H, (HL) - Lê da memória
 void opcode_66(Emulator* emu, uint16_t opcode) {
     emu->cpu.H = mmu_read_byte(emu, get_hl(emu));
+    log_info("LD H, (HL) => 0x%02X", emu->cpu.H);
 }
 
 // 0x67: LD H, A
 void opcode_67(Emulator* emu, uint16_t opcode) {
     emu->cpu.H = emu->cpu.A;
+    log_info("LD H, A");
 }
 
 // 0x68: LD L, B
 void opcode_68(Emulator* emu, uint16_t opcode) {
     emu->cpu.L = emu->cpu.B;
+    log_info("LD L, B");
 }
 
 // 0x69: LD L, C
 void opcode_69(Emulator* emu, uint16_t opcode) {
     emu->cpu.L = emu->cpu.C;
+    log_info("LD L, C");
 }
 
 // 0x6A: LD L, D
 void opcode_6A(Emulator* emu, uint16_t opcode) {
     emu->cpu.L = emu->cpu.D;
+    log_info("LD L, D");
 }
 
 // 0x6B: LD L, E
 void opcode_6B(Emulator* emu, uint16_t opcode) {
     emu->cpu.L = emu->cpu.E;
+    log_info("LD L, E");
 }
 
 // 0x6C: LD L, H
 void opcode_6C(Emulator* emu, uint16_t opcode) {
     emu->cpu.L = emu->cpu.H;
+    log_info("LD L, H");
 }
 
 // 0x6D: LD L, L (Nop efetivo)
 void opcode_6D(Emulator* emu, uint16_t opcode) {
     emu->cpu.L = emu->cpu.L;
+    log_info("LD L, L");
 }
 
 // 0x6E: LD L, (HL) - Lê da memória
 void opcode_6E(Emulator* emu, uint16_t opcode) {
     emu->cpu.L = mmu_read_byte(emu, get_hl(emu));
+    log_info("LD L, (HL) => 0x%02X", emu->cpu.L);
 }
 
 // 0x6F: LD L, A
 void opcode_6F(Emulator* emu, uint16_t opcode) {
     emu->cpu.L = emu->cpu.A;
+    log_info("LD L, A");
 }
 
 // --- BLOCO 0x70 - 0x7F: Loads (Escrita em Memória) e HALT ---
@@ -841,37 +961,43 @@ void opcode_6F(Emulator* emu, uint16_t opcode) {
 // 0x70: LD (HL), B
 void opcode_70(Emulator* emu, uint16_t opcode) {
     mmu_write_byte(emu, get_hl(emu), emu->cpu.B);
+    log_info("LD (HL), B");
 }
 
 // 0x71: LD (HL), C
 void opcode_71(Emulator* emu, uint16_t opcode) {
     mmu_write_byte(emu, get_hl(emu), emu->cpu.C);
+    log_info("LD (HL), C");
 }
 
 // 0x72: LD (HL), D
 void opcode_72(Emulator* emu, uint16_t opcode) {
     mmu_write_byte(emu, get_hl(emu), emu->cpu.D);
+    log_info("LD (HL), D");
 }
 
 // 0x73: LD (HL), E
 void opcode_73(Emulator* emu, uint16_t opcode) {
     mmu_write_byte(emu, get_hl(emu), emu->cpu.E);
+    log_info("LD (HL), E");
 }
 
 // 0x74: LD (HL), H
 void opcode_74(Emulator* emu, uint16_t opcode) {
     mmu_write_byte(emu, get_hl(emu), emu->cpu.H);
+    log_info("LD (HL), H");
 }
 
 // 0x75: LD (HL), L
 void opcode_75(Emulator* emu, uint16_t opcode) {
     mmu_write_byte(emu, get_hl(emu), emu->cpu.L);
+    log_info("LD (HL), L");
 }
 
 // 0x76: HALT - Pausa a CPU até ocorrer uma interrupção
 void opcode_76(Emulator* emu, uint16_t opcode) {
     emu->cpu.halted = true;
-    
+    log_info("HALT executed");
     // Nota Técnica: Existe um "HALT Bug" no hardware original se 
     // interrupções estiverem desabilitadas (IME=0) mas houver flags pendentes.
     // Para um emulador inicial, apenas setar halted = true é suficiente.
@@ -880,46 +1006,56 @@ void opcode_76(Emulator* emu, uint16_t opcode) {
 // 0x77: LD (HL), A
 void opcode_77(Emulator* emu, uint16_t opcode) {
     mmu_write_byte(emu, get_hl(emu), emu->cpu.A);
+    log_info("LD (HL), A");
 }
+#include <stdarg.h>
 
 // 0x78: LD A, B
 void opcode_78(Emulator* emu, uint16_t opcode) {
     emu->cpu.A = emu->cpu.B;
+    log_info("LD A, B");
 }
 
 // 0x79: LD A, C
 void opcode_79(Emulator* emu, uint16_t opcode) {
     emu->cpu.A = emu->cpu.C;
+    log_info("LD A, C");
 }
 
 // 0x7A: LD A, D
 void opcode_7A(Emulator* emu, uint16_t opcode) {
     emu->cpu.A = emu->cpu.D;
+    log_info("LD A, D");
 }
 
 // 0x7B: LD A, E
 void opcode_7B(Emulator* emu, uint16_t opcode) {
     emu->cpu.A = emu->cpu.E;
+    log_info("LD A, E");
 }
 
 // 0x7C: LD A, H
 void opcode_7C(Emulator* emu, uint16_t opcode) {
     emu->cpu.A = emu->cpu.H;
+    log_info("LD A, H");
 }
 
 // 0x7D: LD A, L
 void opcode_7D(Emulator* emu, uint16_t opcode) {
     emu->cpu.A = emu->cpu.L;
+    log_info("LD A, L");
 }
 
 // 0x7E: LD A, (HL) - Lê da memória
 void opcode_7E(Emulator* emu, uint16_t opcode) {
     emu->cpu.A = mmu_read_byte(emu, get_hl(emu));
+    log_info("LD A, (HL) => 0x%02X", emu->cpu.A);
 }
 
 // 0x7F: LD A, A (Nop efetivo)
 void opcode_7F(Emulator* emu, uint16_t opcode) {
     emu->cpu.A = emu->cpu.A;
+    log_info("LD A, A");
 }
 
 // --- BLOCO 0x80 - 0x87: ADD A, r ---
@@ -927,42 +1063,50 @@ void opcode_7F(Emulator* emu, uint16_t opcode) {
 // 0x80: ADD A, B
 void opcode_80(Emulator* emu, uint16_t opcode) {
     add_a_n8(emu, emu->cpu.B);
+    log_info("ADD A, B");
 }
 
 // 0x81: ADD A, C
 void opcode_81(Emulator* emu, uint16_t opcode) {
     add_a_n8(emu, emu->cpu.C);
+    log_info("ADD A, C");
 }
 
 // 0x82: ADD A, D
 void opcode_82(Emulator* emu, uint16_t opcode) {
     add_a_n8(emu, emu->cpu.D);
+    log_info("ADD A, D");
 }
 
 // 0x83: ADD A, E
 void opcode_83(Emulator* emu, uint16_t opcode) {
     add_a_n8(emu, emu->cpu.E);
+    log_info("ADD A, E");
 }
 
 // 0x84: ADD A, H
 void opcode_84(Emulator* emu, uint16_t opcode) {
     add_a_n8(emu, emu->cpu.H);
+    log_info("ADD A, H");
 }
 
 // 0x85: ADD A, L
 void opcode_85(Emulator* emu, uint16_t opcode) {
     add_a_n8(emu, emu->cpu.L);
+    log_info("ADD A, L");
 }
 
 // 0x86: ADD A, (HL) - Lê da memória e soma
 void opcode_86(Emulator* emu, uint16_t opcode) {
     uint8_t val = mmu_read_byte(emu, get_hl(emu));
     add_a_n8(emu, val);
+    log_info("ADD A, (HL) => 0x%02X", val);
 }
 
 // 0x87: ADD A, A
 void opcode_87(Emulator* emu, uint16_t opcode) {
     add_a_n8(emu, emu->cpu.A);
+    log_info("ADD A, A");
 }
 
 // --- BLOCO 0x88 - 0x8F: ADC A, r (Add with Carry) ---
@@ -970,42 +1114,50 @@ void opcode_87(Emulator* emu, uint16_t opcode) {
 // 0x88: ADC A, B
 void opcode_88(Emulator* emu, uint16_t opcode) {
     adc_a_n8(emu, emu->cpu.B);
+    log_info("ADC A, B");
 }
 
 // 0x89: ADC A, C
 void opcode_89(Emulator* emu, uint16_t opcode) {
     adc_a_n8(emu, emu->cpu.C);
+    log_info("ADC A, C");
 }
 
 // 0x8A: ADC A, D
 void opcode_8A(Emulator* emu, uint16_t opcode) {
     adc_a_n8(emu, emu->cpu.D);
+    log_info("ADC A, D");
 }
 
 // 0x8B: ADC A, E
 void opcode_8B(Emulator* emu, uint16_t opcode) {
     adc_a_n8(emu, emu->cpu.E);
+    log_info("ADC A, E");
 }
 
 // 0x8C: ADC A, H
 void opcode_8C(Emulator* emu, uint16_t opcode) {
     adc_a_n8(emu, emu->cpu.H);
+    log_info("ADC A, H");
 }
 
 // 0x8D: ADC A, L
 void opcode_8D(Emulator* emu, uint16_t opcode) {
     adc_a_n8(emu, emu->cpu.L);
+    log_info("ADC A, L");
 }
 
 // 0x8E: ADC A, (HL)
 void opcode_8E(Emulator* emu, uint16_t opcode) {
     uint8_t val = mmu_read_byte(emu, get_hl(emu));
     adc_a_n8(emu, val);
+    log_info("ADC A, (HL) => 0x%02X", val);
 }
 
 // 0x8F: ADC A, A
 void opcode_8F(Emulator* emu, uint16_t opcode) {
     adc_a_n8(emu, emu->cpu.A);
+    log_info("ADC A, A");
 }
 
 // --- BLOCO 0x90 - 0x97: SUB r (A = A - r) ---
@@ -1013,42 +1165,50 @@ void opcode_8F(Emulator* emu, uint16_t opcode) {
 // 0x90: SUB B
 void opcode_90(Emulator* emu, uint16_t opcode) {
     sub_n8(emu, emu->cpu.B);
+    log_info("SUB B");
 }
 
 // 0x91: SUB C
 void opcode_91(Emulator* emu, uint16_t opcode) {
     sub_n8(emu, emu->cpu.C);
+    log_info("SUB C");
 }
 
 // 0x92: SUB D
 void opcode_92(Emulator* emu, uint16_t opcode) {
     sub_n8(emu, emu->cpu.D);
+    log_info("SUB D");
 }
 
 // 0x93: SUB E
 void opcode_93(Emulator* emu, uint16_t opcode) {
     sub_n8(emu, emu->cpu.E);
+    log_info("SUB E");
 }
 
 // 0x94: SUB H
 void opcode_94(Emulator* emu, uint16_t opcode) {
     sub_n8(emu, emu->cpu.H);
+    log_info("SUB H");
 }
 
 // 0x95: SUB L
 void opcode_95(Emulator* emu, uint16_t opcode) {
     sub_n8(emu, emu->cpu.L);
+    log_info("SUB L");
 }
 
 // 0x96: SUB (HL)
 void opcode_96(Emulator* emu, uint16_t opcode) {
     uint8_t val = mmu_read_byte(emu, get_hl(emu));
     sub_n8(emu, val);
+    log_info("SUB (HL) => 0x%02X", val);
 }
 
 // 0x97: SUB A (Resultado sempre 0, Z=1)
 void opcode_97(Emulator* emu, uint16_t opcode) {
     sub_n8(emu, emu->cpu.A);
+    log_info("SUB A");
 }
 
 // --- BLOCO 0x98 - 0x9F: SBC A, r (A = A - r - C) ---
@@ -1056,42 +1216,50 @@ void opcode_97(Emulator* emu, uint16_t opcode) {
 // 0x98: SBC A, B
 void opcode_98(Emulator* emu, uint16_t opcode) {
     sbc_a_n8(emu, emu->cpu.B);
+    log_info("SBC A, B");
 }
 
 // 0x99: SBC A, C
 void opcode_99(Emulator* emu, uint16_t opcode) {
     sbc_a_n8(emu, emu->cpu.C);
+    log_info("SBC A, C");
 }
 
 // 0x9A: SBC A, D
 void opcode_9A(Emulator* emu, uint16_t opcode) {
     sbc_a_n8(emu, emu->cpu.D);
+    log_info("SBC A, D");
 }
 
 // 0x9B: SBC A, E
 void opcode_9B(Emulator* emu, uint16_t opcode) {
     sbc_a_n8(emu, emu->cpu.E);
+    log_info("SBC A, E");
 }
 
 // 0x9C: SBC A, H
 void opcode_9C(Emulator* emu, uint16_t opcode) {
     sbc_a_n8(emu, emu->cpu.H);
+    log_info("SBC A, H");
 }
 
 // 0x9D: SBC A, L
 void opcode_9D(Emulator* emu, uint16_t opcode) {
     sbc_a_n8(emu, emu->cpu.L);
+    log_info("SBC A, L");
 }
 
 // 0x9E: SBC A, (HL)
 void opcode_9E(Emulator* emu, uint16_t opcode) {
     uint8_t val = mmu_read_byte(emu, get_hl(emu));
     sbc_a_n8(emu, val);
+    log_info("SBC A, (HL) => 0x%02X", val);
 }
 
 // 0x9F: SBC A, A (Resultado será 0 ou -1 dependendo do Carry)
 void opcode_9F(Emulator* emu, uint16_t opcode) {
     sbc_a_n8(emu, emu->cpu.A);
+    log_info("SBC A, A");
 }
 
 // --- BLOCO 0xA0 - 0xA7: AND r (A = A & r) ---
@@ -1099,42 +1267,50 @@ void opcode_9F(Emulator* emu, uint16_t opcode) {
 // 0xA0: AND B
 void opcode_A0(Emulator* emu, uint16_t opcode) {
     and_n8(emu, emu->cpu.B);
+    log_info("AND B");
 }
 
 // 0xA1: AND C
 void opcode_A1(Emulator* emu, uint16_t opcode) {
     and_n8(emu, emu->cpu.C);
+    log_info("AND C");
 }
 
 // 0xA2: AND D
 void opcode_A2(Emulator* emu, uint16_t opcode) {
     and_n8(emu, emu->cpu.D);
+    log_info("AND D");
 }
 
 // 0xA3: AND E
 void opcode_A3(Emulator* emu, uint16_t opcode) {
     and_n8(emu, emu->cpu.E);
+    log_info("AND E");
 }
 
 // 0xA4: AND H
 void opcode_A4(Emulator* emu, uint16_t opcode) {
     and_n8(emu, emu->cpu.H);
+    log_info("AND H");
 }
 
 // 0xA5: AND L
 void opcode_A5(Emulator* emu, uint16_t opcode) {
     and_n8(emu, emu->cpu.L);
+    log_info("AND L");
 }
 
 // 0xA6: AND (HL)
 void opcode_A6(Emulator* emu, uint16_t opcode) {
     uint8_t val = mmu_read_byte(emu, get_hl(emu));
     and_n8(emu, val);
+    log_info("AND (HL) => 0x%02X", val);
 }
 
 // 0xA7: AND A
 void opcode_A7(Emulator* emu, uint16_t opcode) {
     and_n8(emu, emu->cpu.A);
+    log_info("AND A");
 }
 
 // --- BLOCO 0xA8 - 0xAF: XOR r (A = A ^ r) ---
@@ -1142,42 +1318,50 @@ void opcode_A7(Emulator* emu, uint16_t opcode) {
 // 0xA8: XOR B
 void opcode_A8(Emulator* emu, uint16_t opcode) {
     xor_n8(emu, emu->cpu.B);
+    log_info("XOR B");
 }
 
 // 0xA9: XOR C
 void opcode_A9(Emulator* emu, uint16_t opcode) {
     xor_n8(emu, emu->cpu.C);
+    log_info("XOR C");
 }
 
 // 0xAA: XOR D
 void opcode_AA(Emulator* emu, uint16_t opcode) {
     xor_n8(emu, emu->cpu.D);
+    log_info("XOR D");
 }
 
 // 0xAB: XOR E
 void opcode_AB(Emulator* emu, uint16_t opcode) {
     xor_n8(emu, emu->cpu.E);
+    log_info("XOR E");
 }
 
 // 0xAC: XOR H
 void opcode_AC(Emulator* emu, uint16_t opcode) {
     xor_n8(emu, emu->cpu.H);
+    log_info("XOR H");
 }
 
 // 0xAD: XOR L
 void opcode_AD(Emulator* emu, uint16_t opcode) {
     xor_n8(emu, emu->cpu.L);
+    log_info("XOR L");
 }
 
 // 0xAE: XOR (HL)
 void opcode_AE(Emulator* emu, uint16_t opcode) {
     uint8_t val = mmu_read_byte(emu, get_hl(emu));
     xor_n8(emu, val);
+    log_info("XOR (HL) => 0x%02X", val);
 }
 
 // 0xAF: XOR A (Resultado é sempre 0, Z=1. Muito usado para limpar A)
 void opcode_AF(Emulator* emu, uint16_t opcode) {
     xor_n8(emu, emu->cpu.A);
+    log_info("XOR A");
 }
 
 // --- BLOCO 0xB0 - 0xB7: OR r (A = A | r) ---
@@ -1185,42 +1369,50 @@ void opcode_AF(Emulator* emu, uint16_t opcode) {
 // 0xB0: OR B
 void opcode_B0(Emulator* emu, uint16_t opcode) {
     or_n8(emu, emu->cpu.B);
+    log_info("OR B");
 }
 
 // 0xB1: OR C
 void opcode_B1(Emulator* emu, uint16_t opcode) {
     or_n8(emu, emu->cpu.C);
+    log_info("OR C");
 }
 
 // 0xB2: OR D
 void opcode_B2(Emulator* emu, uint16_t opcode) {
     or_n8(emu, emu->cpu.D);
+    log_info("OR D");
 }
 
 // 0xB3: OR E
 void opcode_B3(Emulator* emu, uint16_t opcode) {
     or_n8(emu, emu->cpu.E);
+    log_info("OR E");
 }
 
 // 0xB4: OR H
 void opcode_B4(Emulator* emu, uint16_t opcode) {
     or_n8(emu, emu->cpu.H);
+    log_info("OR H");
 }
 
 // 0xB5: OR L
 void opcode_B5(Emulator* emu, uint16_t opcode) {
     or_n8(emu, emu->cpu.L);
+    log_info("OR L");
 }
 
 // 0xB6: OR (HL)
 void opcode_B6(Emulator* emu, uint16_t opcode) {
     uint8_t val = mmu_read_byte(emu, get_hl(emu));
     or_n8(emu, val);
+    log_info("OR (HL) => 0x%02X", val);
 }
 
 // 0xB7: OR A
 void opcode_B7(Emulator* emu, uint16_t opcode) {
     or_n8(emu, emu->cpu.A);
+    log_info("OR A");
 }
 
 // --- BLOCO 0xB8 - 0xBF: CP r (Flags = A - r) ---
@@ -1228,42 +1420,50 @@ void opcode_B7(Emulator* emu, uint16_t opcode) {
 // 0xB8: CP B
 void opcode_B8(Emulator* emu, uint16_t opcode) {
     cp_n8(emu, emu->cpu.B);
+    log_info("CP B");
 }
 
 // 0xB9: CP C
 void opcode_B9(Emulator* emu, uint16_t opcode) {
     cp_n8(emu, emu->cpu.C);
+    log_info("CP C");
 }
 
 // 0xBA: CP D
 void opcode_BA(Emulator* emu, uint16_t opcode) {
     cp_n8(emu, emu->cpu.D);
+    log_info("CP D");
 }
 
 // 0xBB: CP E
 void opcode_BB(Emulator* emu, uint16_t opcode) {
     cp_n8(emu, emu->cpu.E);
+    log_info("CP E");
 }
 
 // 0xBC: CP H
 void opcode_BC(Emulator* emu, uint16_t opcode) {
     cp_n8(emu, emu->cpu.H);
+    log_info("CP H");
 }
 
 // 0xBD: CP L
 void opcode_BD(Emulator* emu, uint16_t opcode) {
     cp_n8(emu, emu->cpu.L);
+    log_info("CP L");
 }
 
 // 0xBE: CP (HL)
 void opcode_BE(Emulator* emu, uint16_t opcode) {
     uint8_t val = mmu_read_byte(emu, get_hl(emu));
     cp_n8(emu, val);
+    log_info("CP (HL) => 0x%02X", val);
 }
 
 // 0xBF: CP A (Sempre Z=1, N=1, H=0, C=0)
 void opcode_BF(Emulator* emu, uint16_t opcode) {
     cp_n8(emu, emu->cpu.A);
+    log_info("CP A");
 }
 
 // --- BLOCO 0xC0 - 0xCF: Stack, Calls e Flow Control ---
@@ -1313,12 +1513,14 @@ void opcode_C5(Emulator* emu, uint16_t opcode) {
 void opcode_C6(Emulator* emu, uint16_t opcode) {
     uint8_t val = cpu_next_u8(emu);
     add_a_n8(emu, val); // Usa seu helper existente
+    log_info("ADD A, 0x%02X", val);
 }
 
 // 0xC7: RST 00H (Call para endereço fixo 0x0000)
 void opcode_C7(Emulator* emu, uint16_t opcode) {
     push_u16(emu, emu->cpu.PC);
     emu->cpu.PC = 0x0000;
+    log_info("RST 00H");
 }
 
 // 0xC8: RET Z (Retorna se Z == 1)
@@ -1331,6 +1533,7 @@ void opcode_C8(Emulator* emu, uint16_t opcode) {
 // 0xC9: RET (Retorno Incondicional)
 void opcode_C9(Emulator* emu, uint16_t opcode) {
     emu->cpu.PC = pop_u16(emu);
+    log_info("RET");
 }
 
 // 0xCA: JP Z, a16
@@ -1366,27 +1569,31 @@ void opcode_CD(Emulator* emu, uint16_t opcode) {
 void opcode_CE(Emulator* emu, uint16_t opcode) {
     uint8_t val = cpu_next_u8(emu);
     adc_a_n8(emu, val); // Usa helper existente
+    log_info("ADC A, 0x%02X", val);
 }
 
 // 0xCF: RST 08H
 void opcode_CF(Emulator* emu, uint16_t opcode) {
     push_u16(emu, emu->cpu.PC);
     emu->cpu.PC = 0x0008;
+    log_info("RST 08H");
 }
-
 // --- BLOCO 0xD0 - 0xDF: Control Flow (Carry), Stack e RETI ---
 
 // 0xD0: RET NC (Retorna se Carry == 0)
 void opcode_D0(Emulator* emu, uint16_t opcode) {
     if (!flag_C_get(emu)) {
         emu->cpu.PC = pop_u16(emu);
-        // Ciclos extras (condicional satisfeita)
+        log_info("RET NC taken to PC=0x%04X", emu->cpu.PC);
+    } else {
+        log_info("RET NC not taken");
     }
 }
 
 // 0xD1: POP DE
 void opcode_D1(Emulator* emu, uint16_t opcode) {
     set_de(emu, pop_u16(emu));
+    log_info("POP DE");
 }
 
 // 0xD2: JP NC, a16 (Pula se Carry == 0)
@@ -1394,6 +1601,9 @@ void opcode_D2(Emulator* emu, uint16_t opcode) {
     uint16_t addr = cpu_next_u16(emu);
     if (!flag_C_get(emu)) {
         emu->cpu.PC = addr;
+        log_info("JP NC taken to 0x%04X", addr);
+    } else {
+        log_info("JP NC not taken");
     }
 }
 
@@ -1407,30 +1617,39 @@ void opcode_D4(Emulator* emu, uint16_t opcode) {
     if (!flag_C_get(emu)) {
         push_u16(emu, emu->cpu.PC);
         emu->cpu.PC = addr;
+        log_info("CALL NC taken to 0x%04X", addr);
+    } else {
+        log_info("CALL NC not taken");
     }
 }
 
 // 0xD5: PUSH DE
 void opcode_D5(Emulator* emu, uint16_t opcode) {
     push_u16(emu, get_de(emu));
+    log_info("PUSH DE");
 }
 
 // 0xD6: SUB n8 (Subtrai imediato de A)
 void opcode_D6(Emulator* emu, uint16_t opcode) {
     uint8_t val = cpu_next_u8(emu);
     sub_n8(emu, val); // Usa helper existente
+    log_info("SUB 0x%02X", val);
 }
 
 // 0xD7: RST 10H (Call para 0x0010)
 void opcode_D7(Emulator* emu, uint16_t opcode) {
     push_u16(emu, emu->cpu.PC);
     emu->cpu.PC = 0x0010;
+    log_info("RST 10H");
 }
 
 // 0xD8: RET C (Retorna se Carry == 1)
 void opcode_D8(Emulator* emu, uint16_t opcode) {
     if (flag_C_get(emu)) {
         emu->cpu.PC = pop_u16(emu);
+        log_info("RET C taken to PC=0x%04X", emu->cpu.PC);
+    } else {
+        log_info("RET C not taken");
     }
 }
 
@@ -1438,6 +1657,7 @@ void opcode_D8(Emulator* emu, uint16_t opcode) {
 void opcode_D9(Emulator* emu, uint16_t opcode) {
     emu->cpu.PC = pop_u16(emu);
     emu->cpu.interrupts_enabled = true; // Reabilita a Master Interrupt Flag (IME)
+    log_info("RETI executed, PC=0x%04X", emu->cpu.PC);
 }
 
 // 0xDA: JP C, a16
@@ -1445,6 +1665,9 @@ void opcode_DA(Emulator* emu, uint16_t opcode) {
     uint16_t addr = cpu_next_u16(emu);
     if (flag_C_get(emu)) {
         emu->cpu.PC = addr;
+        log_info("JP C taken to 0x%04X", addr);
+    } else {
+        log_info("JP C not taken");
     }
 }
 
@@ -1456,6 +1679,9 @@ void opcode_DC(Emulator* emu, uint16_t opcode) {
     if (flag_C_get(emu)) {
         push_u16(emu, emu->cpu.PC);
         emu->cpu.PC = addr;
+        log_info("CALL C taken to 0x%04X", addr);
+    } else {
+        log_info("CALL C not taken");
     }
 }
 
@@ -1465,12 +1691,14 @@ void opcode_DC(Emulator* emu, uint16_t opcode) {
 void opcode_DE(Emulator* emu, uint16_t opcode) {
     uint8_t val = cpu_next_u8(emu);
     sbc_a_n8(emu, val); // Usa helper existente
+    log_info("SBC A, 0x%02X", val);
 }
 
 // 0xDF: RST 18H
 void opcode_DF(Emulator* emu, uint16_t opcode) {
     push_u16(emu, emu->cpu.PC);
     emu->cpu.PC = 0x0018;
+    log_info("RST 18H");
 }
 
 // --- BLOCO 0xE0 - 0xEF: High Ram, Stack Math e Jumps ---
@@ -1481,11 +1709,13 @@ void opcode_E0(Emulator* emu, uint16_t opcode) {
     uint8_t offset = cpu_next_u8(emu);
     uint16_t addr = 0xFF00 + offset;
     mmu_write_byte(emu, addr, emu->cpu.A);
+    log_info("LDH (0x%04X), A (A=0x%02X)", addr, emu->cpu.A);
 }
 
 // 0xE1: POP HL
 void opcode_E1(Emulator* emu, uint16_t opcode) {
     set_hl(emu, pop_u16(emu));
+    log_info("POP HL");
 }
 
 // 0xE2: LD (C), A -> Escreve A em (0xFF00 + C)
@@ -1493,6 +1723,7 @@ void opcode_E1(Emulator* emu, uint16_t opcode) {
 void opcode_E2(Emulator* emu, uint16_t opcode) {
     uint16_t addr = 0xFF00 + emu->cpu.C;
     mmu_write_byte(emu, addr, emu->cpu.A);
+    log_info("LD (0x%04X), A (A=0x%02X)", addr, emu->cpu.A);
 }
 
 // 0xE3: ILLEGAL
@@ -1502,18 +1733,21 @@ void opcode_E2(Emulator* emu, uint16_t opcode) {
 // 0xE5: PUSH HL
 void opcode_E5(Emulator* emu, uint16_t opcode) {
     push_u16(emu, get_hl(emu));
+    log_info("PUSH HL");
 }
 
 // 0xE6: AND n8 (Imediato)
 void opcode_E6(Emulator* emu, uint16_t opcode) {
     uint8_t val = cpu_next_u8(emu);
     and_n8(emu, val); // Usa helper existente
+    log_info("AND 0x%02X", val);
 }
 
 // 0xE7: RST 20H
 void opcode_E7(Emulator* emu, uint16_t opcode) {
     push_u16(emu, emu->cpu.PC);
     emu->cpu.PC = 0x0020;
+    log_info("RST 20H");
 }
 
 // 0xE8: ADD SP, e8 (Soma imediato com sinal ao SP) - CHATO DE IMPLEMENTAR
@@ -1532,18 +1766,21 @@ void opcode_E8(Emulator* emu, uint16_t opcode) {
     flag_N_set(emu, false);
 
     emu->cpu.SP = sp + offset;
+    log_info("ADD SP, %d (SP=0x%04X)", offset, emu->cpu.SP);
 }
 
 // 0xE9: JP (HL) -> PC = HL
 // Atenção: Não lê da memória, apenas copia o valor de HL para PC
 void opcode_E9(Emulator* emu, uint16_t opcode) {
     emu->cpu.PC = get_hl(emu);
+    log_info("JP (HL) to 0x%04X", emu->cpu.PC);
 }
 
 // 0xEA: LD (a16), A -> Escreve A em endereço absoluto de 16 bits
 void opcode_EA(Emulator* emu, uint16_t opcode) {
     uint16_t addr = cpu_next_u16(emu);
     mmu_write_byte(emu, addr, emu->cpu.A);
+    log_info("LD (0x%04X), A (A=0x%02X)", addr, emu->cpu.A);
 }
 
 // 0xEB: ILLEGAL
@@ -1556,12 +1793,14 @@ void opcode_EA(Emulator* emu, uint16_t opcode) {
 void opcode_EE(Emulator* emu, uint16_t opcode) {
     uint8_t val = cpu_next_u8(emu);
     xor_n8(emu, val); // Usa helper existente
+    log_info("XOR 0x%02X", val);
 }
 
 // 0xEF: RST 28H
 void opcode_EF(Emulator* emu, uint16_t opcode) {
     push_u16(emu, emu->cpu.PC);
     emu->cpu.PC = 0x0028;
+    log_info("RST 28H");
 }
 
 // --- BLOCO 0xF0 - 0xFF: HRAM, Interrupts e Stack Complexo ---
@@ -1572,6 +1811,7 @@ void opcode_F0(Emulator* emu, uint16_t opcode) {
     uint8_t offset = cpu_next_u8(emu);
     uint16_t addr = 0xFF00 + offset;
     emu->cpu.A = mmu_read_byte(emu, addr);
+    log_info("LDH A, (0x%04X) => 0x%02X", addr, emu->cpu.A);
 }
 
 // 0xF1: POP AF
@@ -1581,6 +1821,7 @@ void opcode_F1(Emulator* emu, uint16_t opcode) {
     emu->cpu.A = (af >> 8) & 0xFF;
     // Máscara 0xF0 para garantir que bits baixos de F sejam 0
     emu->cpu.F = (af & 0xF0); 
+    log_info("POP AF (A=0x%02X, F=0x%02X)", emu->cpu.A, emu->cpu.F);
 }
 
 // 0xF2: LD A, (C) -> Lê de (0xFF00 + C) para A
@@ -1588,12 +1829,14 @@ void opcode_F1(Emulator* emu, uint16_t opcode) {
 void opcode_F2(Emulator* emu, uint16_t opcode) {
     uint16_t addr = 0xFF00 + emu->cpu.C;
     emu->cpu.A = mmu_read_byte(emu, addr);
+    log_info("LD A, (0x%04X) => 0x%02X", addr, emu->cpu.A);
 }
 
 // 0xF3: DI (Disable Interrupts)
 // Desabilita a flag IME (Interrupt Master Enable) imediatamente.
 void opcode_F3(Emulator* emu, uint16_t opcode) {
     emu->cpu.interrupts_enabled = false;
+    log_info("DI executed");
 }
 
 // 0xF4: ILLEGAL / UNUSED
@@ -1603,18 +1846,21 @@ void opcode_F5(Emulator* emu, uint16_t opcode) {
     // Garante máscara no F antes de empilhar, por segurança
     uint16_t af = (emu->cpu.A << 8) | (emu->cpu.F & 0xF0);
     push_u16(emu, af);
+    log_info("PUSH AF (A=0x%02X, F=0x%02X)", emu->cpu.A, emu->cpu.F & 0xF0);
 }
 
 // 0xF6: OR n8 (Imediato)
 void opcode_F6(Emulator* emu, uint16_t opcode) {
     uint8_t val = cpu_next_u8(emu);
     or_n8(emu, val); // Usa helper existente
+    log_info("OR 0x%02X", val);
 }
 
 // 0xF7: RST 30H
 void opcode_F7(Emulator* emu, uint16_t opcode) {
     push_u16(emu, emu->cpu.PC);
     emu->cpu.PC = 0x0030;
+    log_info("RST 30H");
 }
 
 // 0xF8: LD HL, SP+e8
@@ -1633,12 +1879,14 @@ void opcode_F8(Emulator* emu, uint16_t opcode) {
     flag_C_set(emu, ((sp & 0xFF) + (offset & 0xFF)) > 0xFF);
 
     set_hl(emu, (uint16_t)result);
+    log_info("LD HL, SP+%d (HL=0x%04X)", offset, (uint16_t)result);
 }
 
 // 0xF9: LD SP, HL
 // Copia HL para SP. Não afeta flags.
 void opcode_F9(Emulator* emu, uint16_t opcode) {
     emu->cpu.SP = get_hl(emu);
+    log_info("LD SP, HL (SP=0x%04X)", emu->cpu.SP);
 }
 
 // 0xFA: LD A, (a16) -> Lê byte de endereço absoluto para A
@@ -1646,6 +1894,7 @@ void opcode_F9(Emulator* emu, uint16_t opcode) {
 void opcode_FA(Emulator* emu, uint16_t opcode) {
     uint16_t addr = cpu_next_u16(emu);
     emu->cpu.A = mmu_read_byte(emu, addr);
+    log_info("LD A, (0x%04X) => 0x%02X", addr, emu->cpu.A);
 }
 
 // 0xFB: EI (Enable Interrupts)
@@ -1656,6 +1905,7 @@ void opcode_FA(Emulator* emu, uint16_t opcode) {
 // mas tenha isso em mente para precisão futura (bug do "EI instruction delay").
 void opcode_FB(Emulator* emu, uint16_t opcode) {
     emu->cpu.interrupts_enabled = true;
+    log_info("EI executed");
 }
 
 // 0xFC: ILLEGAL / UNUSED
@@ -1666,6 +1916,7 @@ void opcode_FB(Emulator* emu, uint16_t opcode) {
 void opcode_FE(Emulator* emu, uint16_t opcode) {
     uint8_t val = cpu_next_u8(emu);
     cp_n8(emu, val); // Usa helper existente
+    log_info("CP 0x%02X", val);
 }
 
 // 0xFF: RST 38H
@@ -1674,6 +1925,7 @@ void opcode_FE(Emulator* emu, uint16_t opcode) {
 void opcode_FF(Emulator* emu, uint16_t opcode) {
     push_u16(emu, emu->cpu.PC);
     emu->cpu.PC = 0x0038;
+    log_info("RST 38H");
 }
 
 // --- TABELA DE INSTRUÇÕES ---
