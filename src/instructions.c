@@ -1,7 +1,7 @@
 #include "instructions.h"
-#include "cpu.h"
-#include "mmu.h"
-#include "emulator.h"
+#include <cpu.h>
+#include <mmu.h>
+#include <emulator.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -1343,12 +1343,7 @@ void opcode_CA(Emulator* emu, uint16_t opcode) {
 
 // 0xCB: PREFIX CB (Bit Operations) - CRÍTICO
 void opcode_CB(Emulator* emu, uint16_t opcode) {
-    // O byte seguinte determina a operação na tabela estendida.
-    uint8_t cb_op = cpu_next_u8(emu);
-    
-    // TODO: Implementar a tabela de instruções CB (RLC, BIT, RES, SET)
-    printf("ERRO CRITICO: Instrucao PREFIX CB 0x%02X ainda nao implementada!\n", cb_op);
-    exit(1);
+    cb_prefix_handler(emu);
 }
 
 // 0xCC: CALL Z, a16
