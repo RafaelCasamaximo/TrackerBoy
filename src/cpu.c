@@ -1,3 +1,7 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+
 #include <cpu.h>
 #include <emulator.h>
 #include <instructions.h>
@@ -160,8 +164,36 @@ uint16_t cpu_next_u16(Emulator* emu) {
 }
 
 void cpu_step(Emulator* emu) {
-    // Fetch the next opcode
+    // 1. Verificar interrupções (Futuramente aqui você checa se deve acordar)
+    // handle_interrupts(emu); 
+
+    // 2. Se a CPU estiver em HALT, não fazemos fetch de nova instrução!
+    if (emu->cpu.halted) {
+        // A CPU "roda" ciclos internos, mas não avança o PC.
+        // Aqui futuramente você somaria ciclos ao relógio do sistema.
+        
+        // Se você tiver interrupções implementadas:
+        // if (interrupcao_pendente) { emu->cpu.halted = false; }
+        
+        return; // Sai da função sem executar nada novo
+    }
+
+    // --- Daqui para baixo é o código normal de execução ---
+
+    // 3. LOG ANTES DE EXECUTAR
+    if (emu->cpu.PC >= 0x0100 && emu->cpu.PC <= 0x0250) { // Aumentei o range para você ver o loop
+        uint8_t opcode_peek = mmu_read_byte(emu, emu->cpu.PC);
+        printf("PC:%04X | Op:%02X | SP:%04X\n", emu->cpu.PC, opcode_peek, emu->cpu.SP);
+    }
+
+    // 4. Fetch
     uint8_t opcode = cpu_next_u8(emu);
-    // Execute the instruction
-    instructions[opcode](emu, opcode);
+
+    // 5. Execute
+    if (instructions[opcode] != NULL) {
+        instructions[opcode](emu, opcode);
+    } else {
+        printf("CRITICAL: Opcode NULL %02X\n", opcode);
+        exit(1);
+    }
 }
