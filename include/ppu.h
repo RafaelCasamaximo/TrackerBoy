@@ -3,31 +3,31 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-// Forward declaration
 typedef struct Emulator Emulator;
 
-// Modos da PPU (STAT Register)
-// O Game Boy cicla por estes modos a cada linha desenhada
+// Cores padrão (ARGB) - Estilo esverdeado clássico ou P&B
+#define COLOR_WHITE 0xFF9BBC0F // Cor 0
+#define COLOR_LIGHT 0xFF8BAC0F // Cor 1
+#define COLOR_DARK  0xFF306230 // Cor 2
+#define COLOR_BLACK 0xFF0F380F // Cor 3
+
+// Modos da PPU
 typedef enum {
-    PPU_MODE_HBLANK = 0,      // Modo 0: Intervalo horizontal (CPU pode acessar VRAM/OAM)
-    PPU_MODE_VBLANK = 1,      // Modo 1: Intervalo vertical (CPU pode acessar tudo)
-    PPU_MODE_OAM_SEARCH = 2,  // Modo 2: Buscando sprites na OAM (OAM bloqueada)
-    PPU_MODE_PIXEL_TRANSFER = 3 // Modo 3: Enviando pixels para o LCD (VRAM/OAM bloqueadas)
+    PPU_MODE_HBLANK = 0,
+    PPU_MODE_VBLANK = 1,
+    PPU_MODE_OAM_SEARCH = 2,
+    PPU_MODE_PIXEL_TRANSFER = 3
 } PpuMode;
 
 typedef struct PPU {
-    // Estado da Temporização
-    int cycle_counter;      // Acumulador de ciclos da CPU
-    uint8_t current_line;   // Registrador LY (0-153)
-    PpuMode mode;           // Modo atual (0-3)
+    int cycle_counter;
+    uint8_t current_line; // LY
+    PpuMode mode;
 
-    // Aqui futuramente entrarão coisas como:
-    // uint32_t framebuffer[160 * 144];
-    // Paletas, Scroll X/Y, Window X/Y, etc.
+    // Buffer de vídeo: 160x144 pixels
+    uint32_t framebuffer[160 * 144];
+
 } PPU;
 
-// Inicializa variáveis
 void ppu_init(Emulator* emu);
-
-// Chamado a cada iteração do loop principal para avançar o tempo
 void ppu_step(Emulator* emu, int cpu_cycles);
